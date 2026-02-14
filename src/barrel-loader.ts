@@ -32,6 +32,12 @@ interface BarrelLoaderOptions {
    * Resolves `export * from "./module"` to `export { actual, exports } from "./module"`
    */
   convertNamespaceToNamed?: boolean;
+
+  /**
+   * Whether to recursively resolve barrel files to their root exports
+   * If a barrel file exports from another barrel file, follows the chain to get actual exports
+   */
+  resolveBarrelExports?: boolean;
 }
 
 interface ExportInfo {
@@ -148,8 +154,84 @@ function resolveNamespaceExportsSync(filePath: string, loaderContext: LoaderCont
 }
 
 /**
- * Parse export statements from source code
+ * Recursively resolve barrel file exports to their root sources
+ * If a barrel file exports from another barrel file, follows the chain to actual implementations
  */
+function resolveBarrelExportsRecursive(
+  filePath: string,
+  loaderContext: LoaderContext<BarrelLoaderOptions>,
+  isBarrelFile: (filePath: string) => boolean,
+  visited: Set<string> = new Set(),
+): ExportInfo[] {
+  // Prevent infinite loops
+  if (visited.has(filePath)) {
+    return [];
+  }
+  visited.add(filePath);
+
+  try {
+    if (typeof loaderContext.fs?.readFileSync !== "function" || !loaderContext.fs) {
+      return [];
+    }
+
+    const fileContent = loaderContext.fs.readFileSync(filePath, "utf-8");
+    const exports = parseExports(fileContent);
+
+    if (!isBarrelFile(filePath)) {
+      // Not a barrel file, return exports as-is
+      return exports;
+    }
+
+    // This is a barrel file, check if it exports from other barrel files
+    const resolvedExports: ExportInfo[] = [];
+    const path = require("node:path");
+
+    for (const exp of exports) {
+      const dir = path.dirname(filePath);
+      const resolvedPath = path.resolve(dir, exp.source);
+      const extensions = [".ts", ".tsx", ".js", ".jsx", "/index.ts", "/index.tsx", "/index.js", "/index.jsx"];
+
+      let fullPath = "";
+      for (const ext of extensions) {
+        const candidate = resolvedPath.endsWith(ext) ? resolvedPath : `${resolvedPath}${ext}`;
+        try {
+          loaderContext.fs.readFileSync(candidate, "utf-8");
+          fullPath = candidate;
+          break;
+        } catch {
+          // Try next extension
+        }
+      }
+
+      if (!fullPath) {
+        // File not found, keep original export
+        resolvedExports.push(exp);
+        continue;
+      }
+
+      // Check if the resolved file is also a barrel file
+      if (isBarrelFile(fullPath)) {
+        // Recursively resolve this barrel file
+        const barrelExports = resolveBarrelExportsRecursive(fullPath, loaderContext, isBarrelFile, visited);
+        // Map exports to point to this barrel file's source
+        for (const barrelExp of barrelExports) {
+          resolvedExports.push({
+            ...barrelExp,
+            source: exp.source,
+            isTypeExport: exp.isTypeExport || barrelExp.isTypeExport,
+          });
+        }
+      } else {
+        // Not a barrel file, keep original export
+        resolvedExports.push(exp);
+      }
+    }
+
+    return resolvedExports;
+  } catch {
+    return [];
+  }
+}
 function parseExports(source: string): ExportInfo[] {
   const exports: ExportInfo[] = [];
   const lines = source.split("\n");
@@ -436,6 +518,17 @@ function barrelLoader(this: LoaderContext<BarrelLoaderOptions>, source: string):
       console.log(`[barrel-loader] No exports found in: ${this.resourcePath}`);
     }
     return source;
+  }
+
+  // Resolve barrel exports recursively if requested
+  if (options.resolveBarrelExports) {
+    const resolvedExports = resolveBarrelExportsRecursive(this.resourcePath, this, isBarrelFile);
+    if (resolvedExports.length > 0) {
+      exports = resolvedExports;
+      if (options.verbose) {
+        console.log(`[barrel-loader] Resolved barrel exports in: ${this.resourcePath}`);
+      }
+    }
   }
 
   // Remove duplicates if requested

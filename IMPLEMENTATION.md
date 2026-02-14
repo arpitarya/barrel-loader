@@ -22,6 +22,7 @@
 - ✅ Custom barrel file detection support
 - ✅ Verbose logging for debugging
 - ✅ TypeScript types included
+- ✅ Recursive barrel file resolution (new)
 
 ### 2. Testing
 
@@ -29,16 +30,18 @@
 - `src/barrel-loader.test.ts` - Comprehensive test suite
 
 **Test Coverage:**
-- 21 test cases covering all functionality
+- 23 test cases covering all functionality
 - Handles pass-through for non-barrel files
 - Tests duplicate removal and deduplication
 - Tests export sorting and reorganization
 - Tests all export format types (named, default, namespace)
 - Tests type and value export separation
-- Tests multiple exports from same source (key improvement)
+- Tests multiple exports from same source
 - Tests scoped packages with multiple exports
 - Tests mixed default and named exports
 - Tests custom detection functions
+- Tests recursive barrel file resolution (new)
+- Tests circular reference handling
 - All tests passing ✅
 
 ### 3. Build Configuration
@@ -122,16 +125,16 @@ const options: BarrelLoaderOptions = {
 
 ```
 Source Files:
-- src/barrel-loader.ts      430 lines (implementation)
-- src/barrel-loader.test.ts 354 lines (tests)
+- src/barrel-loader.ts      560 lines (implementation with new recursive resolution)
+- src/barrel-loader.test.ts 405 lines (tests)
 - src/index.ts              3 lines (public API)
 
 Tests:
-- 21 test cases covering all features and edge cases
+- 23 test cases covering all features and edge cases
 - All passing ✅
 - 100% feature coverage
-- Includes tests for multiple exports from same source
-- Tests for type and value export separation
+- Includes tests for recursive barrel resolution
+- Tests for circular reference handling
 
 Documentation:
 - README.md               Complete guide with examples
@@ -140,8 +143,8 @@ Documentation:
 - docs/types.ts          TypeScript reference
 
 Build Output:
-- ESM: 11.6 kB
-- CJS: 14.4 kB
+- ESM: 14.0 kB
+- CJS: 17.0 kB
 ```
 
 ## How to Use

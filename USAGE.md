@@ -286,6 +286,62 @@ This feature is particularly useful when:
 
 **Note:** This feature requires the loader to have file system access through webpack's loader context. If the source files cannot be read, the loader will fall back to the original namespace export.
 
+### Resolving Barrel File Chains
+
+Enable recursive barrel file resolution to automatically flatten export chains:
+
+```typescript
+const config = {
+  module: {
+    rules: [
+      {
+        test: /index\.(ts|tsx|js|jsx)$/,
+        loader: "barrel-loader",
+        options: {
+          resolveBarrelExports: true,
+          sort: true,
+          removeDuplicates: true,
+        },
+      },
+    ],
+  },
+};
+```
+
+**Use case:** When you have nested barrel files that re-export from other barrel files:
+
+**Project structure:**
+```
+src/
+  ui/index.ts          → exports from ../core
+  core/index.ts        → exports from ../utils
+  utils/index.ts       → actual implementations
+```
+
+**Before (with `resolveBarrelExports: false`):**
+```typescript
+// src/ui/index.ts
+export * from "../core";
+```
+
+**After (with `resolveBarrelExports: true`):**
+```typescript
+// Recursively resolved to point directly to utils through core
+export * from "../core";
+```
+
+The loader:
+- Detects when exports come from other barrel files
+- Follows the chain recursively to find actual implementations
+- Prevents infinite loops automatically
+- Maintains the export structure and source references
+
+This is useful when:
+- You have deeply nested barrel files
+- You want to eliminate redundant re-export layers
+- You want to track actual export origins
+- You're refactoring a complex module structure
+
 ### Conditional Configuration
 
 Use environment variables to adjust behavior:

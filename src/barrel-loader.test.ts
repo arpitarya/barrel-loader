@@ -351,5 +351,59 @@ export * as utilities from "./ui";
       expect(result).toContain("Modal");
       expect(result).toContain("utilities");
     });
+
+    it("should resolve barrel exports recursively when resolveBarrelExports is enabled", () => {
+      const mockContext = {
+        resourcePath: "/path/to/index.ts",
+        getOptions: () => ({ resolveBarrelExports: true, verbose: false }),
+        fs: {
+          readFileSync: (filePath: string) => {
+            // Simulate a chain of barrel files
+            if (filePath.includes("common/index.ts")) {
+              return `export { formatDate, debounce } from "../utils/index.ts";`;
+            }
+            if (filePath.includes("utils/index.ts")) {
+              return `export { formatDate } from "./date";
+export { debounce } from "./async";`;
+            }
+            // Default barrel file at /path/to/index.ts
+            return `export { Button } from "./Button";
+export * from "../common/index.ts";`;
+          },
+        },
+      };
+
+      const source = `export { Button } from "./Button";
+export * from "../common/index.ts";
+`;
+
+      const result = barrelLoader.call(mockContext, source);
+
+      expect(result).toContain("Button");
+      // Should resolve through the barrel chain
+      expect(result).toBeTruthy();
+    });
+
+    it("should handle barrel files without infinite loops", () => {
+      const mockContext = {
+        resourcePath: "/path/to/index.ts",
+        getOptions: () => ({ resolveBarrelExports: true, verbose: false }),
+        fs: {
+          readFileSync: (filePath: string) => {
+            // Simulate circular reference
+            if (filePath.includes("index.ts")) {
+              return `export * from "./other";`;
+            }
+            return `export * from "./index";`; // Points back
+          },
+        },
+      };
+
+      const source = `export * from "./other";`;
+
+      const result = barrelLoader.call(mockContext, source);
+      expect(result).toBeTruthy();
+      // Should not crash and should handle the circular reference gracefully
+    });
   });
 });

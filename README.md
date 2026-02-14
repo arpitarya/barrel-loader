@@ -167,6 +167,56 @@ export { Button } from "./Button";
 export { formatDate, debounce, parseJSON } from "./utils";
 ```
 
+### `resolveBarrelExports` (boolean, default: `false`)
+
+Recursively resolves barrel files to their root exports. When enabled, if a barrel file exports from another barrel file, the loader follows the chain until reaching actual implementations (non-barrel files). This flattens re-export chains.
+
+```typescript
+{
+  loader: "barrel-loader",
+  options: {
+    resolveBarrelExports: true,
+  },
+}
+```
+
+**Example - Nested barrel files:**
+
+**File structure:**
+```
+src/
+  components/
+    index.ts       (exports from ../common)
+  common/
+    index.ts       (exports from ../utils)
+  utils/
+    index.ts       (actual implementations)
+```
+
+**Input (src/components/index.ts):**
+```typescript
+export { Button } from "./Button";
+export * from "../common";  // barrel file
+```
+
+**Content (src/common/index.ts):**
+```typescript
+export * from "../utils";  // barrel file
+export { helpers } from "./helpers";
+```
+
+**Output (with `resolveBarrelExports: true`):**
+```typescript
+export { Button } from "./Button";
+// Recursively resolved from ../common which points to ../utils
+export { ... } from "../common";
+```
+
+This feature:
+- Automatically detects when exports point to other barrel files
+- Follows the chain until reaching non-barrel files
+- Prevents infinite loops with visited tracking
+- Maintains export structure and relationships
 
 
 ### Input (src/components/index.ts)
