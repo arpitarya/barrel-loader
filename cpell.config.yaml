@@ -1,0 +1,14 @@
+---
+language: en
+ignorePaths:
+  - node_modules
+  - dist
+  - build
+  - public
+  - venv
+  - .git
+dictionaries:
+  - general
+dictionaryDefinitions:
+  - name: general
+    path: ./.cspell/general.cspell.txt

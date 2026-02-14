@@ -1,0 +1,10 @@
+24.13.0
+
+<!-- Installation:
+nvm install v24.13.0
+
+Switch node version:
+nvm use v24.13.0
+
+To make nvm node version as default:
+nvm alias default v24.13.0 -->
