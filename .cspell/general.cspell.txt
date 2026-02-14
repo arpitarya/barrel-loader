@@ -1,2 +1,10 @@
-venv
+barrel
+biome
+esm
+pnpm
+rslib
+rspack
+rstest
 SENTENEL
+venv
+webpack

@@ -1,14 +1,15 @@
 # Publishing Guide
 
-This document explains how to publish packages from the Sentenel monorepo.
+This document explains how to publish barrel-loader to npm.
 
 ## Prerequisites
 
 Before publishing, ensure:
-1. All tests pass: `pnpm -r test`
-2. All builds succeed: `pnpm -r build`
-3. Code is formatted and linted: `pnpm -r run format && pnpm -r run lint`
+1. All tests pass: `npm test` (or `pnpm test`)
+2. Build succeeds: `npm run build` (or `pnpm build`)
+3. Code is formatted and linted: `npm run format && npm run lint` (if available)
 4. Package version is updated in `package.json`
+5. Changes are documented in CHANGELOG or commit message
 
 ## Publishing to npm
 
@@ -22,13 +23,10 @@ Before publishing, ensure:
 
 The recommended way to publish is through GitHub Releases:
 
-1. Update the version in `packages/node-utils/package.json`
-2. Commit and push: `git add . && git commit -m "chore: bump version to x.y.z"`
-3. Create a GitHub release with tag `v0.1.0` (matching package version)
-4. The [publish workflow](.github/workflows/publish.yml) will automatically:
-   - Build all packages
-   - Publish to npm with the `@sentenel` scope
-   - Publish to GitHub Packages
+1. Update the version in `package.json`
+2. Commit and push: `git add . && git commit -m \"chore: bump version to x.y.z\"`
+3. Create a GitHub release with tag `vx.y.z` (matching package version)
+4. If you have a publish workflow configured, it will automatically build and publish
 
 ### Manual Publishing
 
@@ -38,16 +36,11 @@ For manual publishing without a release:
 # Update version
 npm version patch|minor|major
 
-# Build packages
-pnpm -r build
+# Build package
+npm run build
 
-# Publish to npm (requires NPM_TOKEN)
-pnpm -r publish --access public
-
-# Or publish to GitHub Packages
-npm config set registry https://npm.pkg.github.com
-npm config set //npm.pkg.github.com/:_authToken YOUR_GITHUB_TOKEN
-pnpm -r publish --access public
+# Publish to npm (requires authentication)
+npm publish
 ```
 
 ## Publishing to GitHub Packages
