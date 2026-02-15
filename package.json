@@ -32,6 +32,10 @@
   "engines": {
     "node": ">=18.0.0"
   },
+  "os": [
+    "darwin",
+    "linux"
+  ],
   "keywords": [
     "barrel",
     "loader",
@@ -45,14 +49,14 @@
   ],
   "scripts": {
     "build": "pnpm build:rust && pnpm build:ts",
-    "build:rust": "node -e \"const script = process.platform === 'win32' ? 'build.bat' : './build.sh'; require('child_process').execSync(script, { stdio: 'inherit' })\"",
+    "build:rust": "./build.sh",
     "build:ts": "rslib build",
-    "build:debug": "node -e \"const script = process.platform === 'win32' ? 'build.bat --debug' : './build.sh --debug'; require('child_process').execSync(script, { stdio: 'inherit' })\"",
-    "build:clean": "node -e \"const script = process.platform === 'win32' ? 'build.bat --clean' : './build.sh --clean'; require('child_process').execSync(script, { stdio: 'inherit' })\"",
-    "clean": "node -e \"const script = process.platform === 'win32' ? 'clean.bat' : './clean.sh'; require('child_process').execSync(script, { stdio: 'inherit' })\"",
-    "clean:deps": "node -e \"const script = process.platform === 'win32' ? 'clean.bat --deps' : './clean.sh --deps'; require('child_process').execSync(script, { stdio: 'inherit' })\"",
-    "clean:all": "node -e \"const script = process.platform === 'win32' ? 'clean.bat --all' : './clean.sh --all'; require('child_process').execSync(script, { stdio: 'inherit' })\"",
-    "clean:verbose": "node -e \"const script = process.platform === 'win32' ? 'clean.bat --verbose' : './clean.sh --verbose'; require('child_process').execSync(script, { stdio: 'inherit' })\"",
+    "build:debug": "./build.sh --debug",
+    "build:clean": "./build.sh --clean",
+    "clean": "./clean.sh",
+    "clean:deps": "./clean.sh --deps",
+    "clean:all": "./clean.sh --all",
+    "clean:verbose": "./clean.sh --verbose",
     "test": "node test.cjs",
     "test:rust": "cargo test",
     "lint": "biome lint src && pnpm lint:rust",
