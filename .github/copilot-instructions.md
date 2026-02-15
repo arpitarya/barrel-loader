@@ -108,6 +108,14 @@
   - Ensures IDE intellisense matches the actual linter version
   - Updates automatically when dependencies are upgraded
 
+## Supported Platforms
+
+**Operating Systems:**
+- **Linux** (x64, arm64)
+- **macOS** (x64, arm64/Apple Silicon)
+
+**Note:** Windows is not officially supported. The native Rust module is built for Unix-like systems.
+
 ## Build System
 
 ### Build Scripts
