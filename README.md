@@ -179,14 +179,8 @@ Reconstructs optimized source code from parsed exports.
 
 Use the automated setup script to install all prerequisites:
 
-**macOS/Linux:**
 ```bash
 ./setup.sh
-```
-
-**Windows:**
-```batch
-setup.bat
 ```
 
 The setup script will:
@@ -239,9 +233,8 @@ pnpm clean:all
 
 ### Build Scripts
 
-For advanced build options, use the dedicated build scripts:
+For advanced build options, use the dedicated build script:
 
-**macOS/Linux:**
 ```bash
 # Release build
 ./build.sh
@@ -260,24 +253,6 @@ For advanced build options, use the dedicated build scripts:
 
 # Help
 ./build.sh --help
-```
-
-**Windows:**
-```batch
-REM Release build
-build.bat
-
-REM Debug build
-build.bat --debug
-
-REM Clean and rebuild
-build.bat --clean
-
-REM Verbose output
-build.bat --verbose
-
-REM Help
-build.bat --help
 ```
 
 ### Build Output
@@ -378,7 +353,7 @@ Failed to load native addon, falling back to JavaScript
 pnpm build
 ```
 
-### Build errors on macOS/Linux/Windows
+### Build errors
 
 Ensure Rust and Node.js are installed:
 
@@ -479,8 +454,15 @@ cargo build --release --bin barrel-loader
 ./target/release/barrel-loader src/index.ts --sort
 ```
 
-## Supported Node.js Versions
+## Supported Platforms
 
+**Operating Systems:**
+- Linux (x64, arm64)
+- macOS (x64, arm64/Apple Silicon)
+
+**Note:** Windows is not officially supported. The native Rust module is built for Unix-like systems.
+
+**Node.js Versions:**
 - Node.js 18+ (LTS)
 - Pre-built binaries available via npm/pnpm
 
