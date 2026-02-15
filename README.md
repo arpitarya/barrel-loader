@@ -415,39 +415,48 @@ pnpm add barrel-loader
 ### Project Structure
 
 ```
-.
-├── Cargo.toml                  # Rust manifest
-├── Cargo.lock                  # Dependency lock file
-├── build.rs                    # NAPI build script
-├── build.sh                    # Build script (macOS/Linux)
-├── build.bat                   # Build script (Windows)
-├── clean.sh                    # Clean script (macOS/Linux)
-├── clean.bat                   # Clean script (Windows)
-├── setup.sh                    # Environment setup (macOS/Linux)
-├── setup.bat                   # Environment setup (Windows)
-├── rust-toolchain.toml         # Rust toolchain specification
-├── clippy.toml                 # Clippy linter configuration
-├── .rustfmt.toml               # Rustfmt formatter configuration
-├── .cargo/
-│   └── config.toml             # Cargo build configuration
-├── package.json                # npm package manifest
-├── index.cjs                   # webpack/rspack loader
-├── index.d.cts                 # TypeScript definitions for loader
-├── barrel-loader-utils.cjs     # Node.js wrapper with fallback
-├── barrel-loader-utils.d.cts   # TypeScript definitions for utils
-├── test.cjs                    # Test suite
+barrel-loader/
+├── src/
+│   ├── lib.rs                    # Rust NAPI addon implementation
+│   ├── main.rs                   # Rust binary (not used for addon)
+│   ├── types.ts                  # TypeScript type definitions
+│   ├── barrel-loader-utils.ts    # TypeScript utilities with native loader
+│   └── index.ts                  # TypeScript webpack/rspack loader
 ├── native/
-│   └── barrel_loader_rs.node   # Compiled native addon
-└── src/
-    ├── lib.rs                  # NAPI bindings + core logic
-    └── main.rs                 # CLI tool (optional)
+│   └── barrel_loader_rs.node     # Compiled native addon
+├── index.cjs                     # Built loader (from src/index.ts)
+├── index.d.cts                   # TypeScript definitions
+├── barrel-loader-utils.cjs       # Built utils (from src/barrel-loader-utils.ts)
+├── barrel-loader-utils.d.cts     # TypeScript definitions
+├── build.rs                      # NAPI build script
+├── Cargo.toml                    # Rust package manifest
+├── tsconfig.json                 # TypeScript configuration
+├── rslib.config.ts               # rslib bundler configuration
+├── package.json                  # npm package manifest
+├── rust-toolchain.toml           # Rust toolchain version
+├── clippy.toml                   # Rust linter config
+├── .rustfmt.toml                 # Rust formatter config
+├── eslint.config.mjs             # ESLint configuration
+├── .prettierrc                   # Prettier configuration
+├── .cargo/
+│   └── config.toml               # Cargo build configuration
+├── setup.sh / setup.bat          # Automated environment setup
+├── build.sh / build.bat          # Build scripts
+└── clean.sh / clean.bat          # Clean scripts
 ```
+
+**Key Components:**
+- **Rust Source** (`src/lib.rs`): Core parsing and processing logic compiled to native addon
+- **TypeScript Source** (`src/*.ts`): Loader and utilities written in TypeScript
+- **Built Outputs** (`*.cjs`): Bundled CommonJS modules from TypeScript source
+- **Configuration**: Multiple config files for Rust, TypeScript, linting, and bundling
 
 ### Testing
 
 ```bash
-pnpm test                    # Run all tests
-pnpm test -- --verbose      # With output
+pnpm test                    # Run JavaScript functional tests
+pnpm test:rust               # Run Rust unit tests with rstest
+pnpm test -- --verbose       # With output
 ```
 
 ### Code Quality

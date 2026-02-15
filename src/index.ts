@@ -3,15 +3,25 @@
  * This is a drop-in replacement for the TypeScript loader
  */
 
-const path = require("path");
-const { parseExports, removeDuplicates, sortExports, reconstructSource } = require("./barrel-loader-utils.cjs");
-const fs = require("fs");
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import {
+  parseExports,
+  reconstructSource,
+  removeDuplicates,
+  sortExports,
+} from './barrel-loader-utils';
+import type { BarrelLoaderOptions, ExportInfo, LoaderContext } from './types';
 
 /**
  * Resolve barrel files recursively to include all re-exported exports
  * Prevents infinite loops with visited tracking
  */
-function resolveBarrelExportsRecursive(filePath, fileSystem, visited = new Set()) {
+function resolveBarrelExportsRecursive(
+  filePath: string,
+  fileSystem: typeof fs,
+  visited: Set<string> = new Set()
+): ExportInfo[] {
   // Prevent circular references
   const absolutePath = path.resolve(filePath);
   if (visited.has(absolutePath)) {
@@ -20,21 +30,21 @@ function resolveBarrelExportsRecursive(filePath, fileSystem, visited = new Set()
   visited.add(absolutePath);
 
   try {
-    const content = fileSystem.readFileSync(filePath, "utf-8");
+    const content = fileSystem.readFileSync(filePath, 'utf-8');
     const allExports = parseExports(content, filePath);
 
     // Recursively resolve any re-exports from other barrel files
-    const resolved = new Map();
+    const resolved = new Map<string, ExportInfo>();
     for (const exp of allExports) {
       const sourceExtension = path.extname(exp.source);
 
       // If it's a relative import without extension or with .js/.ts/.mjs/.mts
-      if (exp.source.startsWith(".")) {
+      if (exp.source.startsWith('.')) {
         let sourceFile = path.resolve(path.dirname(filePath), exp.source);
 
         // Try common extensions
         if (!sourceExtension) {
-          const extensions = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".mts", ".cjs"];
+          const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.mts', '.cjs'];
           for (const ext of extensions) {
             const candidate = sourceFile + ext;
             if (fileSystem.existsSync(candidate)) {
@@ -46,25 +56,24 @@ function resolveBarrelExportsRecursive(filePath, fileSystem, visited = new Set()
 
         try {
           // Check if source is a barrel file (re-exports from other files)
-          const sourceContent = fileSystem.readFileSync(sourceFile, "utf-8");
+          const sourceContent = fileSystem.readFileSync(sourceFile, 'utf-8');
           const sourceExports = parseExports(sourceContent, sourceFile);
 
           // If the source also exports, resolve it recursively
-          if (sourceExports.some((e) => e.source.startsWith("."))) {
+          if (sourceExports.some((e) => e.source.startsWith('.'))) {
             const nestedExports = resolveBarrelExportsRecursive(sourceFile, fileSystem, visited);
 
             // For each export that re-exports from the source file,
             // update with the nested exports
             for (const nested of nestedExports) {
-              const key = `${exp.name}:${exp.export_type}`;
               const nestedKey = `${nested.name}:${nested.export_type}`;
 
-              if (exp.source.endsWith(path.basename(sourceFile).split(".")[0])) {
+              if (exp.source.endsWith(path.basename(sourceFile).split('.')[0])) {
                 resolved.set(nestedKey, nested);
               }
             }
           }
-        } catch (err) {
+        } catch {
           // File doesn't exist or can't be read, skip
         }
       }
@@ -75,7 +84,7 @@ function resolveBarrelExportsRecursive(filePath, fileSystem, visited = new Set()
     }
 
     return Array.from(resolved.values());
-  } catch (err) {
+  } catch {
     // Return empty array if file can't be read
     return [];
   }
@@ -85,8 +94,15 @@ function resolveBarrelExportsRecursive(filePath, fileSystem, visited = new Set()
  * Main loader function for webpack/rspack
  * Compatible with both @rspack/core and webpack loader context
  */
-module.exports = function barrelLoaderRust(content) {
+function barrelLoaderRust(
+  this: LoaderContext<BarrelLoaderOptions>,
+  _content: string
+): string | undefined {
   const filePath = this.resourcePath || this.resource;
+
+  if (!filePath) {
+    throw new Error('barrel-loader: resourcePath is required');
+  }
 
   // Resolve all exports including from nested barrel files
   const fileSystem = this.fs || fs;
@@ -102,12 +118,14 @@ module.exports = function barrelLoaderRust(content) {
   const result = reconstructSource(exports);
 
   // Add webpack source map if needed
-  if (this.sourceMap) {
+  if (this.sourceMap && this.callback) {
     this.callback(null, result, null);
-  } else {
-    return result;
+    return;
   }
-};
 
-// Allow for ESM export as well
-module.exports.default = module.exports;
+  return result;
+}
+
+export default barrelLoaderRust;
+// Also export as named export for compatibility
+export { barrelLoaderRust };

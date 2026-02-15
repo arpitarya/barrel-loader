@@ -19,6 +19,9 @@ napi-derive = "2.16"
 [build-dependencies]
 napi-build = "2.1"
 
+[dev-dependencies]
+rstest = "0.23"
+
 [lib]
 name = "barrel_loader"
 crate-type = ["cdylib"]

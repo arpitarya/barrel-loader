@@ -35,26 +35,26 @@ pub struct BarrelLoader {
 }
 
 impl BarrelLoader {
-    pub fn new(options: BarrelLoaderOptions) -> Self {
+    #[must_use]
+    pub const fn new(options: BarrelLoaderOptions) -> Self {
         Self { options }
     }
 
     /// Check if a file is a barrel file
+    #[must_use]
     pub fn is_barrel_file(&self, file_path: &str) -> bool {
         let path = Path::new(file_path);
-        match path.file_name() {
-            Some(name) => {
-                let name = name.to_string_lossy();
-                matches!(
-                    name.as_ref(),
-                    "index.ts" | "index.js" | "index.tsx" | "index.jsx"
-                )
-            }
-            None => false,
-        }
+        path.file_name().is_some_and(|name| {
+            let name = name.to_string_lossy();
+            matches!(
+                name.as_ref(),
+                "index.ts" | "index.js" | "index.tsx" | "index.jsx"
+            )
+        })
     }
 
     /// Parse exports from source code
+    #[allow(clippy::cast_possible_truncation)]
     pub fn parse_exports(&self, source: &str) -> Result<Vec<ExportInfo>, String> {
         let mut exports = Vec::new();
         let lines: Vec<&str> = source.lines().collect();
@@ -69,7 +69,7 @@ impl BarrelLoader {
             let is_type_export = trimmed.contains("export type");
 
             // Parse named exports
-            if let Some(captures) = self.parse_named_export(trimmed) {
+            if let Some(captures) = Self::parse_named_export(trimmed) {
                 for (specifier, source) in captures {
                     exports.push(ExportInfo {
                         specifier,
@@ -83,7 +83,7 @@ impl BarrelLoader {
             }
 
             // Parse default exports
-            if let Some((specifier, source)) = self.parse_default_export(trimmed) {
+            if let Some((specifier, source)) = Self::parse_default_export(trimmed) {
                 exports.push(ExportInfo {
                     specifier,
                     source,
@@ -95,7 +95,7 @@ impl BarrelLoader {
             }
 
             // Parse namespace exports
-            if let Some((specifier, source)) = self.parse_namespace_export(trimmed) {
+            if let Some((specifier, source)) = Self::parse_namespace_export(trimmed) {
                 exports.push(ExportInfo {
                     specifier,
                     source,
@@ -109,7 +109,7 @@ impl BarrelLoader {
         Ok(exports)
     }
 
-    fn parse_named_export(&self, line: &str) -> Option<Vec<(String, String)>> {
+    fn parse_named_export(line: &str) -> Option<Vec<(String, String)>> {
         // Match: export { foo, bar } from "./module"
         let re = Regex::new(r#"export\s+(?:type\s+)?\{([^}]+)\}\s+from\s+['"]([^'"]+)['"]"#).ok()?;
         let caps = re.captures(line)?;
@@ -118,7 +118,7 @@ impl BarrelLoader {
 
         let pairs: Vec<(String, String)> = specifiers
             .split(',')
-            .map(|s| s.trim())
+            .map(str::trim)
             .filter(|s| !s.is_empty())
             .map(|s| (s.to_string(), source.to_string()))
             .collect();
@@ -130,27 +130,28 @@ impl BarrelLoader {
         }
     }
 
-    fn parse_default_export(&self, line: &str) -> Option<(String, String)> {
+    fn parse_default_export(line: &str) -> Option<(String, String)> {
         // Match: export { default } from "./module" or export { default as Name } from "./module"
         let re = Regex::new(r#"export\s+(?:type\s+)?\{\s*default\s*(?:as\s+(\w+))?\s*\}\s+from\s+['"]([^'"]+)['"]"#).ok()?;
         let caps = re.captures(line)?;
-        let specifier = caps.get(1).map(|m| m.as_str().to_string()).unwrap_or_else(|| "default".to_string());
+        let specifier = caps.get(1).map_or_else(|| "default".to_string(), |m| m.as_str().to_string());
         let source = caps.get(2)?.as_str();
 
         Some((specifier, source.to_string()))
     }
 
-    fn parse_namespace_export(&self, line: &str) -> Option<(String, String)> {
+    fn parse_namespace_export(line: &str) -> Option<(String, String)> {
         // Match: export * from "./module" or export * as helpers from "./module"
         let re = Regex::new(r#"export\s+(?:type\s+)?\*\s+(?:as\s+(\w+)\s+)?from\s+['"]([^'"]+)['"]"#).ok()?;
         let caps = re.captures(line)?;
-        let specifier = caps.get(1).map(|m| m.as_str().to_string()).unwrap_or_else(|| "*".to_string());
+        let specifier = caps.get(1).map_or_else(|| "*".to_string(), |m| m.as_str().to_string());
         let source = caps.get(2)?.as_str();
 
         Some((specifier, source.to_string()))
     }
 
     /// Remove duplicate exports
+    #[must_use]
     pub fn remove_duplicates(&self, exports: Vec<ExportInfo>) -> Vec<ExportInfo> {
         let mut seen = HashSet::new();
         exports
@@ -169,6 +170,7 @@ impl BarrelLoader {
     }
 
     /// Sort exports
+    #[must_use]
     pub fn sort_exports(&self, mut exports: Vec<ExportInfo>) -> Vec<ExportInfo> {
         exports.sort_by(|a, b| {
             if a.source != b.source {
@@ -180,6 +182,7 @@ impl BarrelLoader {
     }
 
     /// Reconstruct source from exports
+    #[must_use]
     pub fn reconstruct_source(&self, original_source: &str, exports: Vec<ExportInfo>) -> String {
         if exports.is_empty() {
             return original_source.to_string();
@@ -229,7 +232,7 @@ impl BarrelLoader {
             // Namespace exports first
             for exp in namespace_exports {
                 if exp.specifier == "*" {
-                    lines.push(format!(r#"export * from "{}";"#, source));
+                    lines.push(format!(r#"export * from "{source}";"#));
                 } else {
                     lines.push(format!(r#"export * as {} from "{}";"#, exp.specifier, source));
                 }
@@ -238,7 +241,7 @@ impl BarrelLoader {
             // Default exports
             for exp in default_exports {
                 if exp.specifier == "default" {
-                    lines.push(format!(r#"export {{ default }} from "{}";"#, source));
+                    lines.push(format!(r#"export {{ default }} from "{source}";"#));
                 } else {
                     lines.push(format!(r#"export {{ default as {} }} from "{}";"#, exp.specifier, source));
                 }
@@ -251,7 +254,7 @@ impl BarrelLoader {
                     .map(|e| e.specifier.as_str())
                     .collect::<Vec<_>>()
                     .join(", ");
-                lines.push(format!(r#"export {{ {} }} from "{}";"#, specifiers, source));
+                lines.push(format!(r#"export {{ {specifiers} }} from "{source}";"#));
             }
 
             // Handle type exports
@@ -271,7 +274,7 @@ impl BarrelLoader {
             // Type namespace exports
             for exp in type_namespace_exports {
                 if exp.specifier == "*" {
-                    lines.push(format!(r#"export type * from "{}";"#, source));
+                    lines.push(format!(r#"export type * from "{source}";"#));
                 } else {
                     lines.push(format!(r#"export type * as {} from "{}";"#, exp.specifier, source));
                 }
@@ -280,7 +283,7 @@ impl BarrelLoader {
             // Type default exports
             for exp in type_default_exports {
                 if exp.specifier == "default" {
-                    lines.push(format!(r#"export type {{ default }} from "{}";"#, source));
+                    lines.push(format!(r#"export type {{ default }} from "{source}";"#));
                 } else {
                     lines.push(format!(r#"export type {{ default as {} }} from "{}";"#, exp.specifier, source));
                 }
@@ -293,7 +296,7 @@ impl BarrelLoader {
                     .map(|e| e.specifier.as_str())
                     .collect::<Vec<_>>()
                     .join(", ");
-                lines.push(format!(r#"export type {{ {} }} from "{}";"#, specifiers, source));
+                lines.push(format!(r#"export type {{ {specifiers} }} from "{source}";"#));
             }
         }
 
@@ -311,14 +314,14 @@ impl BarrelLoader {
         }
 
         if self.options.verbose.unwrap_or(false) {
-            eprintln!("[barrel-loader] Processing barrel file: {}", file_path);
+            eprintln!("[barrel-loader] Processing barrel file: {file_path}");
         }
 
         let mut exports = self.parse_exports(source)?;
 
         if exports.is_empty() {
             if self.options.verbose.unwrap_or(false) {
-                eprintln!("[barrel-loader] No exports found in: {}", file_path);
+                eprintln!("[barrel-loader] No exports found in: {file_path}");
             }
             return Ok(source.to_string());
         }
@@ -340,7 +343,7 @@ impl BarrelLoader {
         if self.options.sort.unwrap_or(false) {
             exports = self.sort_exports(exports);
             if self.options.verbose.unwrap_or(false) {
-                eprintln!("[barrel-loader] Sorted exports in: {}", file_path);
+                eprintln!("[barrel-loader] Sorted exports in: {file_path}");
             }
         }
 
@@ -348,7 +351,7 @@ impl BarrelLoader {
         let transformed = self.reconstruct_source(source, exports);
 
         if self.options.verbose.unwrap_or(false) && transformed != source {
-            eprintln!("[barrel-loader] Transformed barrel file: {}", file_path);
+            eprintln!("[barrel-loader] Transformed barrel file: {file_path}");
         }
 
         Ok(transformed)
@@ -356,6 +359,7 @@ impl BarrelLoader {
 }
 
 #[napi]
+#[allow(clippy::needless_pass_by_value)]
 pub fn process_barrel_file(
     source: String,
     file_path: String,
@@ -367,24 +371,29 @@ pub fn process_barrel_file(
 }
 
 #[napi]
+#[allow(clippy::needless_pass_by_value)]
 pub fn parse_exports_napi(source: String) -> Result<Vec<ExportInfo>> {
     let loader = BarrelLoader::new(BarrelLoaderOptions::default());
     loader.parse_exports(&source).map_err(|e| napi::Error::new(napi::Status::GenericFailure, e))
 }
 
 #[napi]
+#[must_use]
 pub fn remove_duplicates(exports: Vec<ExportInfo>) -> Vec<ExportInfo> {
     let loader = BarrelLoader::new(BarrelLoaderOptions::default());
     loader.remove_duplicates(exports)
 }
 
 #[napi]
+#[must_use]
 pub fn sort_exports_napi(exports: Vec<ExportInfo>) -> Vec<ExportInfo> {
     let loader = BarrelLoader::new(BarrelLoaderOptions::default());
     loader.sort_exports(exports)
 }
 
 #[napi]
+#[must_use]
+#[allow(clippy::needless_pass_by_value)]
 pub fn reconstruct_source_napi(source: String, exports: Vec<ExportInfo>) -> String {
     let loader = BarrelLoader::new(BarrelLoaderOptions::default());
     loader.reconstruct_source(&source, exports)
@@ -393,6 +402,54 @@ pub fn reconstruct_source_napi(source: String, exports: Vec<ExportInfo>) -> Stri
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
+
+    // Parametrized tests using rstest
+    #[rstest]
+    #[case("/path/to/index.ts", true)]
+    #[case("/path/to/index.js", true)]
+    #[case("/path/to/index.tsx", true)]
+    #[case("/path/to/index.jsx", true)]
+    #[case("/path/to/component.ts", false)]
+    #[case("/path/to/module.js", false)]
+    #[case("/path/to/utils/index.ts", true)]
+    fn test_is_barrel_file_parametrized(#[case] file_path: &str, #[case] expected: bool) {
+        let loader = BarrelLoader::new(BarrelLoaderOptions::default());
+        assert_eq!(loader.is_barrel_file(file_path), expected);
+    }
+
+    #[rstest]
+    #[case(r#"export { Button } from "./Button";"#, 1, "Button")]
+    #[case(r#"export { Button, Form } from "./components";"#, 2, "Button")]
+    #[case(r#"export { default as App } from "./App";"#, 1, "default as App")]
+    fn test_parse_exports_parametrized(
+        #[case] source: &str,
+        #[case] expected_count: usize,
+        #[case] first_specifier: &str,
+    ) {
+        let loader = BarrelLoader::new(BarrelLoaderOptions::default());
+        let exports = loader.parse_exports(source).unwrap();
+        assert_eq!(exports.len(), expected_count);
+        if expected_count > 0 {
+            assert_eq!(exports[0].specifier, first_specifier);
+        }
+    }
+
+    #[rstest]
+    #[case("named", false)]
+    #[case("default", false)]
+    #[case("namespace", false)]
+    fn test_export_types(#[case] export_type: &str, #[case] is_type: bool) {
+        let export_info = ExportInfo {
+            specifier: "Test".to_string(),
+            source: "./test".to_string(),
+            export_type: export_type.to_string(),
+            is_type_export: is_type,
+            line: 1,
+        };
+        assert_eq!(export_info.export_type, export_type);
+        assert_eq!(export_info.is_type_export, is_type);
+    }
 
     #[test]
     fn test_is_barrel_file() {
