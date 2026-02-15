@@ -27,6 +27,16 @@ function barrelLoaderRust(
   const options = this.getOptions ? this.getOptions() : {};
   const verbose = options.verbose ?? false;
 
+  // Debug: Write to file to see if loader is invoked
+  try {
+    fs.appendFileSync(
+      '/tmp/barrel-loader-debug.log',
+      `Processing: ${filePath}\nOptions: ${JSON.stringify(options)}\n\n`
+    );
+  } catch (e) {
+    // Ignore
+  }
+
   const logVerbose = (message: string, details?: Record<string, unknown>): void => {
     if (!verbose) return;
     if (details) {
@@ -36,10 +46,10 @@ function barrelLoaderRust(
     console.log(`[barrel-loader] ${message}`);
   };
 
-  const fileSystem = this.fs || fs;
+  // Use Node.js fs directly since webpack's virtual fs has different API
   logVerbose('Start', { filePath });
 
-  let exports = resolveBarrelExportsRecursive(filePath, fileSystem);
+  let exports = resolveBarrelExportsRecursive(filePath, fs, options);
   logVerbose('Resolved exports', {
     total: exports.length,
     typeExports: exports.filter((exp) => exp.is_type_export).length,

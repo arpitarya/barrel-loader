@@ -45,9 +45,10 @@
     "optimization"
   ],
   "scripts": {
-    "build": "pnpm build:rust && pnpm build:ts",
+    "build": "pnpm build:rust && pnpm build:ts && pnpm postbuild",
     "build:rust": "cargo build --release && node scripts/copy-native.cjs",
     "build:ts": "rslib build",
+    "postbuild": "node -e \"require('fs').cpSync('native/barrel_loader_rs.node', 'dist/barrel_loader_rs.node')\"",
     "build:debug": "cargo build && node scripts/copy-native.cjs --debug && pnpm build:ts",
     "build:clean": "pnpm clean && pnpm build",
     "test": "node test.cjs",

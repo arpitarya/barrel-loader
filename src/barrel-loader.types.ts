@@ -29,6 +29,12 @@ export interface BarrelLoaderOptions {
   sort?: boolean;
 
   /**
+   * Convert namespace exports to named exports
+   * @default false
+   */
+  convertNamespaceToNamed?: boolean;
+
+  /**
    * Enable verbose logging
    * @default false
    */

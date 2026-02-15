@@ -14,6 +14,14 @@ function parseExports(content: string, filePath = ''): ExportInfo[] {
   if (nativeAddon?.parse_exports_napi) {
     try {
       const rawExports = nativeAddon.parse_exports_napi(content) as unknown[];
+      if (shouldLog) {
+        console.log('[parse.ts] parseExports called', {
+          filePath,
+          contentLength: content.length,
+          firstLine: content.split('\n')[0],
+          rawExportsCount: rawExports.length,
+        });
+      }
       return rawExports.map((exp) => {
         const entry = exp as Record<string, unknown>;
         return {

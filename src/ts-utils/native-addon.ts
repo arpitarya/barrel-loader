@@ -1,3 +1,4 @@
+import * as path from 'node:path';
 import type { NativeAddon } from '../barrel-loader.types';
 
 /**
@@ -7,7 +8,8 @@ let nativeAddon: NativeAddon | null = null;
 
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const rawAddon = require('../../native/barrel_loader_rs.node') as Record<string, unknown>;
+  const addonPath = path.join(__dirname, 'barrel_loader_rs.node');
+  const rawAddon = require(addonPath) as Record<string, unknown>;
   nativeAddon = {
     parse_exports_napi: rawAddon.parseExportsNapi as NativeAddon['parse_exports_napi'],
     process_barrel_file: rawAddon.processBarrelFile as NativeAddon['process_barrel_file'],

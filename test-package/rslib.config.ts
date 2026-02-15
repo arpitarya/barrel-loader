@@ -1,29 +1,29 @@
-import { defineConfig, type RslibConfig } from "@rslib/core";
+import { defineConfig, type RslibConfig } from '@rslib/core';
 
-process.env.BARREL_LOADER_DEBUG = "true";
+process.env.BARREL_LOADER_DEBUG = 'true';
 
 const config: RslibConfig = {
   lib: [
     {
-      format: "esm",
-      syntax: "es2020",
+      format: 'esm',
+      syntax: 'es2020',
       bundle: false,
       output: {
-        distPath: "./dist",
+        distPath: './dist',
       },
     },
     {
-      format: "cjs",
-      syntax: "es2020",
+      format: 'cjs',
+      syntax: 'es2020',
       bundle: false,
       output: {
-        distPath: "./dist",
+        distPath: './dist',
       },
     },
   ],
   source: {
     entry: {
-      index: "./src/**",
+      index: './src/**',
     },
   },
   tools: {
@@ -32,13 +32,17 @@ const config: RslibConfig = {
         rules: [
           {
             test: /index\.(ts|tsx|js|jsx)$/,
-            loader: "barrel-loader",
-            options: {
-              removeDuplicates: true,
-              convertNamespaceToNamed: true,
-              sort: true,
-              verbose: true,
-            },
+            use: [
+              {
+                loader: 'barrel-loader',
+                options: {
+                  removeDuplicates: true,
+                  convertNamespaceToNamed: true,
+                  sort: true,
+                  verbose: true,
+                },
+              },
+            ],
           },
         ],
       },
