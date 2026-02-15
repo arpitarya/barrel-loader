@@ -71,7 +71,7 @@ jobs:
         run: cargo clippy --all-features -- -D warnings
 
       - name: Build project
-        run: ./build.sh
+        run: pnpm build
 
       - name: Run integration tests
         run: node test.cjs

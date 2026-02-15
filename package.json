@@ -1,26 +1,23 @@
 {
   "name": "barrel-loader",
-  "version": "0.1.5",
+  "version": "0.1.0",
   "description": "High-performance barrel file loader for webpack/rspack using Rust NAPI bindings",
   "license": "ISC",
   "author": "Arpit Arya <arpitarya@users.noreply.github.com>",
   "type": "module",
   "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.cts",
   "exports": {
     ".": {
       "types": "./dist/index.d.cts",
-      "import": "./dist/index.cjs",
+      "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
-    },
-    "./barrel-loader-utils": {
-      "types": "./dist/barrel-loader-utils.d.cts",
-      "import": "./dist/barrel-loader-utils.cjs",
-      "require": "./dist/barrel-loader-utils.cjs"
     }
   },
   "files": [
     "dist/",
+    "docs/",
     "native/",
     "README.md",
     "LICENSE"
@@ -49,14 +46,10 @@
   ],
   "scripts": {
     "build": "pnpm build:rust && pnpm build:ts",
-    "build:rust": "./build.sh",
+    "build:rust": "cargo build --release && node scripts/copy-native.cjs",
     "build:ts": "rslib build",
-    "build:debug": "./build.sh --debug",
-    "build:clean": "./build.sh --clean",
-    "clean": "./clean.sh",
-    "clean:deps": "./clean.sh --deps",
-    "clean:all": "./clean.sh --all",
-    "clean:verbose": "./clean.sh --verbose",
+    "build:debug": "cargo build && node scripts/copy-native.cjs --debug && pnpm build:ts",
+    "build:clean": "pnpm clean && pnpm build",
     "test": "node test.cjs",
     "test:rust": "cargo test",
     "lint": "biome lint src && pnpm lint:rust",
@@ -72,9 +65,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.15",
-    "@rslib/core": "^0.19.6",
-    "@types/node": "^22.10.5",
-    "typescript": "^5.7.3"
+    "@rslib/core": "0.19.6",
+    "@types/node": "22.10.5",
+    "typescript": "5.7.3"
   },
   "packageManager": "pnpm@10.28.2"
 }

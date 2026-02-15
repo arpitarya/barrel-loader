@@ -148,9 +148,9 @@ Follow [Semantic Versioning](https://semver.org/):
 - **PATCH** (0.0.X): Bug fixes only
 
 Examples:
-- `0.1.5` → `0.2.0`: New option added to loader
-- `0.1.5` → `0.1.6`: Bug fix in parser
-- `0.1.5` → `1.0.0`: Webpack loader API changed
+- `0.1.0` → `0.2.0`: New option added to loader
+- `0.1.0` → `0.1.6`: Bug fix in parser
+- `0.1.0` → `1.0.0`: Webpack loader API changed
 
 ## Troubleshooting
 

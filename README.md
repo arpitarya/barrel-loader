@@ -13,7 +13,6 @@ Automatically optimizes barrel files (index.ts/js/tsx/jsx) by removing duplicate
 🧹 **Smart Deduplication** – Removes duplicate exports intelligently
 📊 **Type-Safe** – Separates type exports from value exports
 ⚙️ **Zero Configuration** – Works out of the box with sensible defaults
-🔌 **Direct API** – Use as library or webpack/rspack loader
 
 ## Documentation
 
@@ -21,7 +20,6 @@ Automatically optimizes barrel files (index.ts/js/tsx/jsx) by removing duplicate
 
 Complete guide with real-world examples including:
 - Webpack & Rspack configurations
-- Direct API usage patterns
 - TypeScript integration
 - Monorepo setups
 - Troubleshooting guide
@@ -68,121 +66,15 @@ module.exports = {
 };
 ```
 
-## Direct API Usage
+## Loader Options
 
-```javascript
-const { parseExports, removeDuplicates, sortExports, reconstructSource } = require('barrel-loader/barrel-loader-utils');
+Common options:
+- `sort` – Sort exports alphabetically
+- `removeDuplicates` – Remove duplicate exports
+- `resolveBarrelFiles` – Resolve nested barrel files
+- `verbose` – Enable debug logging
 
-const barrelContent = `
-export { Button } from './button.ts';
-export { Button } from './button.ts';  // duplicate
-export { Input } from './input.ts';
-export type { ButtonProps } from './button.ts';
-`;
-
-// Parse all exports
-const exports = parseExports(barrelContent, 'index.ts');
-// => [
-//   { name: 'Button', source: './button.ts', export_type: 'named', ... },
-//   { name: 'Button', source: './button.ts', export_type: 'named', ... },
-//   { name: 'Input', source: './input.ts', export_type: 'named', ... },
-//   { name: 'ButtonProps', source: './button.ts', export_type: 'type', ... }
-// ]
-
-// Remove duplicates
-const deduped = removeDuplicates(exports);
-
-// Sort for consistency
-const sorted = sortExports(deduped);
-
-// Reconstruct optimized source
-const output = reconstructSource(sorted);
-console.log(output);
-// => export { Button } from './button.ts';
-//   export { Input } from './input.ts';
-//   export type { ButtonProps } from './button.ts';
-```
-
-## API Reference
-
-### parseExports(content, filePath?)
-
-Parses JavaScript/TypeScript source and extracts all export statements.
-
-**Parameters:**
-- `content` (string) – Source code to parse
-- `filePath` (string, optional) – Path for error messages
-
-**Returns:** Array of `ExportInfo` objects
-
-```typescript
-interface ExportInfo {
-  name: string;                      // Export identifier
-  source: string;                    // Import source
-  export_type: 'named' | 'default' | 'namespace' | 'type';
-  is_type_export: boolean;           // True for type exports
-}
-```
-
-### removeDuplicates(exports)
-    convertNamespaceToNamed: true,
-  },
-}
-```
-
-**Example:**
-
-**Input:**
-```typescript
-export { Button } from "./Button";
-export * from "./utils";  // namespace export
-```
-
-**Output (with `convertNamespaceToNamed: true`):**
-```typescript
-export { Button } from "./Button";
-export { formatDate, debounce, parseJSON } from "./utils";
-```
-
-### `resolveBarrelExports` (boolean, default: `false`)
-
-Recursively resolves barrel files to their root exports. When enabled, if a barrel file exports from another barrel file, the loader follows the chain until reaching actual implementations (non-barrel files). This flattens re-export chains.
-
-```typescript
-{
-  loader: "barrel-loader",
-  options: {
-    resolveBarrelExports: true,
-  },
-}
-```
-
-**Example - Nested barrel files:**### removeDuplicates(exports)
-
-Removes duplicate exports based on (name, source, export_type) tuple.
-
-**Parameters:**
-- `exports` – Array of ExportInfo objects
-
-**Returns:** Deduplicated array
-
-### sortExports(exports)
-
-Sorts exports alphabetically by name.
-
-**Parameters:**
-- `exports` – Array of ExportInfo objects
-
-**Returns:** Sorted array
-
-### reconstructSource(exports)
-
-Reconstructs optimized source code from parsed exports.
-
-**Parameters:**
-- `exports` – Array of ExportInfo objects
-
-**Returns:** Generated source code string
+See [docs/EXAMPLES.md](docs/EXAMPLES.md) for full configuration examples and option details.
 
 ## Building from Source
 
@@ -270,8 +162,9 @@ For advanced build options, use the dedicated build script:
 
 The build process generates:
 - `native/barrel_loader_rs.node` – Compiled native addon binary
-- `barrel-loader-utils.cjs` – JavaScript wrapper with fallback support
-- `barrel-loader-utils.d.cts` – TypeScript type definitions
+- `dist/index.cjs` – CommonJS bundle
+- `dist/index.mjs` – ESM bundle
+- `dist/index.d.cts` – TypeScript type definitions
 
 ### Testing & Quality
 
@@ -294,11 +187,6 @@ pnpm lint
 # Format code
 pnpm fmt
 ```
-
-The build process generates:
-- `native/barrel_loader_rs.node` – Compiled native addon
-- `barrel-loader-utils.js` – JavaScript wrapper with fallback support
-- `barrel-loader-utils.d.cts` – TypeScript type definitions
 
 ## Performance Comparison
 
@@ -404,16 +292,14 @@ pnpm add barrel-loader
 barrel-loader/
 ├── src/
 │   ├── lib.rs                    # Rust NAPI addon implementation
-│   ├── main.rs                   # Rust binary (not used for addon)
-│   ├── types.ts                  # TypeScript type definitions
-│   ├── barrel-loader-utils.ts    # TypeScript utilities with native loader
+│   ├── barrel-loader.types.ts    # TypeScript type definitions
 │   └── index.ts                  # TypeScript webpack/rspack loader
 ├── native/
 │   └── barrel_loader_rs.node     # Compiled native addon
-├── index.cjs                     # Built loader (from src/index.ts)
-├── index.d.cts                   # TypeScript definitions
-├── barrel-loader-utils.cjs       # Built utils (from src/barrel-loader-utils.ts)
-├── barrel-loader-utils.d.cts     # TypeScript definitions
+├── dist/
+│   ├── index.cjs                 # Built loader (CommonJS)
+│   ├── index.mjs                 # Built loader (ESM)
+│   └── index.d.cts               # TypeScript definitions
 ├── build.rs                      # NAPI build script
 ├── Cargo.toml                    # Rust package manifest
 ├── tsconfig.json                 # TypeScript configuration
@@ -434,7 +320,7 @@ barrel-loader/
 **Key Components:**
 - **Rust Source** (`src/lib.rs`): Core parsing and processing logic compiled to native addon
 - **TypeScript Source** (`src/*.ts`): Loader and utilities written in TypeScript
-- **Built Outputs** (`*.cjs`): Bundled CommonJS modules from TypeScript source
+- **Built Outputs** (`dist/*.cjs`, `dist/*.mjs`): Bundled CommonJS and ESM modules
 - **Configuration**: Multiple config files for Rust, TypeScript, linting, and bundling
 
 ### Testing

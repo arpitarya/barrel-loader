@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# barrel-loader build script
-# Compiles Rust NAPI addon for webpack/rspack
+# barrel-loader build script (local use)
+# Compiles Rust NAPI addon and TypeScript bundles for webpack/rspack
 
 set -e
 
@@ -16,6 +16,7 @@ NC='\033[0m' # No Color
 BUILD_TYPE="release"
 VERBOSE=0
 CLEAN=0
+BUILD_TS=1
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -36,6 +37,10 @@ while [[ $# -gt 0 ]]; do
       VERBOSE=1
       shift
       ;;
+    --rust-only|--skip-npm|--skip-ts)
+      BUILD_TS=0
+      shift
+      ;;
     --help|-h)
       echo "Usage: $0 [options]"
       echo ""
@@ -44,6 +49,7 @@ while [[ $# -gt 0 ]]; do
       echo "  --release            Build release binary (default, optimized)"
       echo "  --clean              Clean build artifacts before building"
       echo "  --verbose, -v        Show detailed build output"
+      echo "  --rust-only          Build only the Rust addon (skip npm build)"
       echo "  --help, -h           Show this help message"
       echo ""
       exit 0
@@ -57,11 +63,16 @@ done
 
 # Get script directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
 
 # Print header
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${BLUE}  barrel-loader Build Script${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+if [ -n "$CI" ]; then
+  echo -e "${YELLOW}Note: build.sh is intended for local use. CI should run pnpm build or cargo build directly.${NC}"
+fi
 
 # Check prerequisites
 echo -e "\n${YELLOW}Checking prerequisites...${NC}"
@@ -158,6 +169,20 @@ if node -e "require('./native/$NODE_NAME'); console.log('✓ Addon loads success
   echo -e "${GREEN}✓ Addon verification passed${NC}"
 else
   echo -e "${YELLOW}⚠ Could not verify addon loading (may be expected on cross-platform builds)${NC}"
+fi
+
+# Build TypeScript outputs
+if [ $BUILD_TS -eq 1 ]; then
+  echo -e "\n${YELLOW}Building TypeScript bundles...${NC}"
+  if command -v pnpm &> /dev/null; then
+    pnpm build:ts
+  elif command -v npm &> /dev/null; then
+    npm run build:ts
+  else
+    echo -e "${RED}✗ pnpm or npm not found${NC}"
+    exit 1
+  fi
+  echo -e "${GREEN}✓ TypeScript build complete${NC}"
 fi
 
 # Print summary
