@@ -8,7 +8,7 @@
 
 - **Rust**: Core parsing and optimization logic (src/lib.rs)
 - **NAPI-RS**: Node.js bindings for Rust code (v2.16)
-- **TypeScript**: Webpack/Rspack loader interface and utility exports (src/index.ts, src/barrel-loader-utils.ts)
+- **TypeScript**: Modular loader and utilities (src/*.ts)
 - **Build Tools**: rslib (TypeScript bundling), cargo (Rust compilation)
 
 ## Architecture
@@ -21,15 +21,22 @@
    - Implements: `parseExports`, `reconstructSource`, `sortExports`, `removeDuplicates`
    - Key structs: `ExportInfo`, `BarrelLoaderOptions`
 
-2. **TypeScript Wrapper** (`src/index.ts`):
-   - Webpack/Rspack loader implementation
-   - Recursive barrel file resolution
-   - Filesystem integration
-   - Loader context handling
+2. **TypeScript Modules** (Modular architecture, each ~20-50 lines):
+   - **index.ts** - Export-only entry point for the loader
+   - **barrel-loader.ts** - Main webpack/rspack loader implementation
+   - **parse.ts** - Export parsing from Rust addon
+   - **dedupe.ts** - Deduplication of export entries
+   - **sort.ts** - Sorting exports by source and name
+   - **reconstruct.ts** - Reconstruction of optimized source code
+   - **resolve-barrel.ts** - Recursive barrel file resolution
+   - **resolve-utils.ts** - Helper utilities for file resolution
+   - **transform.ts** - Re-export aggregator for transformation functions
+   - **barrel-loader-utils.ts** - Re-export aggregator for public API
+   - **native-addon.ts** - Native Rust addon loading with fallback
 
-3. **Utilities Export** (`src/barrel-loader-utils.ts`):
-   - Re-exports Rust functions for direct API usage
-   - Separate entry point in package.json exports
+3. **Type Definitions** (`src/types.ts`):
+   - Core type definitions for loader and exports
+   - Webpack/Rspack loader context types
 
 ## Key Components
 
@@ -70,14 +77,21 @@
 3. **File System**: Use injected `fs` parameter for testability
 4. **Path Resolution**: Always use `path.resolve()` for absolute paths
 5. **Circular Detection**: Track visited files to prevent infinite loops
-6. **File Size**: Keep files under 100 lines when possible; extract functions/types to separate modules
+6. **Module Size**: Target 20-50 lines per file for maximum clarity
+7. **Single Responsibility**: Each module should do one thing well
+8. **Export Aggregation**: Use re-export files for public API boundaries
+9. **Export Placement**: Always place exports at the end of the file, never inline with functions
 
 ### Code Organization
 
-- **File Size Limit**: Keep files under 100 lines (guideline, not strict rule)
-- **Modularity**: Split large files into focused modules with single responsibilities
-- **Separation**: Extract types, utilities, and helpers into dedicated files
-- **Exceptions**: Core files like `lib.rs` may exceed limit but should be well-structured
+- **File Size Target**: Modules are 20-50 lines (with some at 56 lines for utilities)
+- **Structure**: Imports → Implementation → Exports (always at end)
+- **Modularity**: Each TypeScript file has a single clear responsibility
+- **Separation**: Utilities, parsing, transformation, and resolution are separate modules
+- **Re-exports**: Aggregator files bundle related functionality for the public API
+- **Entry Point**: index.ts contains only re-exports, not implementation
+- **Architecture**: Transform → Dedupe → Sort → Reconstruct pipeline for optimization
+- **Export Style**: Use named exports at end of file, never inline `export function` declarations
 
 ### Naming Conventions
 
@@ -85,6 +99,14 @@
 - TypeScript: Camel case (`parseExports`, `isBarrelFile`)
 - Types: Pascal case (`ExportInfo`, `BarrelLoaderOptions`)
 - Constants: Upper snake case (rare in this project)
+
+## Configuration & Schema
+
+### Schema Management
+- **biome.json**: Uses relative path to installed package schema: `./node_modules/@biomejs/biome/schemas/schema.json`
+  - Always pulls from the installed version, not hardcoded URLs
+  - Ensures IDE intellisense matches the actual linter version
+  - Updates automatically when dependencies are upgraded
 
 ## Build System
 
@@ -115,9 +137,9 @@
 5. Rebuild: `pnpm build:rust`
 
 ### Modifying Loader Behavior
-1. Update `src/index.ts` loader function
-2. Adjust options in `BarrelLoaderOptions` if needed
-3. Update TypeScript types in `src/types.ts`
+1. Update `src/barrel-loader.ts` main loader function
+2. Adjust `resolveBarrelExportsRecursive` in `src/resolve-barrel.ts` if needed
+3. Update `BarrelLoaderOptions` in `src/types.ts`
 4. Rebuild: `pnpm build:ts`
 
 ### Performance Optimization
@@ -129,9 +151,17 @@
 ## Important Files
 
 - `src/lib.rs`: Core Rust implementation (511 lines)
-- `src/index.ts`: Webpack loader wrapper (132 lines)
-- `src/barrel-loader-utils.ts`: Direct API exports
-- `src/types.ts`: TypeScript type definitions
+- `src/index.ts`: Export-only entry point (7 lines)
+- `src/barrel-loader.ts`: Main webpack/rspack loader (42 lines)
+- `src/barrel-loader.types.ts`: TypeScript type definitions (52 lines)
+- `src/barrel-loader-utils.ts`: Direct API re-export aggregator (8 lines)
+- `src/utils/parse.ts`: Export parsing from Rust addon (25 lines)
+- `src/utils/dedupe.ts`: Deduplication logic (31 lines)
+- `src/utils/sort.ts`: Sorting logic (24 lines)
+- `src/utils/reconstruct.ts`: Reconstruction logic (38 lines)
+- `src/utils/resolve-barrel.ts`: Recursive barrel resolution (47 lines)
+- `src/utils/resolve-utils.ts`: Resolution helper utilities (56 lines)
+- `src/utils/native-addon.ts`: Native addon loading (17 lines)
 - `Cargo.toml`: Rust package configuration
 - `package.json`: Node.js package configuration
 - `rslib.config.ts`: TypeScript bundler config
@@ -168,11 +198,19 @@
 
 ## Release Process
 
-1. Update version in both `Cargo.toml` and `package.json`
+1. Update version in both `Cargo.toml` and `package.json` (MUST match exactly)
 2. Run `pnpm build` to ensure clean build
-3. Test with `node test.cjs`
-4. Commit changes: `git commit -m "chore: version bump"`
-5. Follow `PUBLISHING.md` for publishing steps
+3. Test with `node test.cjs` and `cargo test`
+4. Commit changes: `git commit -m "chore: version bump to x.y.z"`
+5. Follow [PUBLISHING.md](../PUBLISHING.md) for detailed publishing steps
+
+The PUBLISHING.md file contains:
+- Pre-publish checklist and testing requirements
+- Version sync requirements (Cargo.toml ↔ package.json)
+- Manual and GitHub Release publishing workflows
+- Native module distribution considerations
+- Cross-platform build guidance
+- Troubleshooting common publishing issues
 
 ## Performance Considerations
 
