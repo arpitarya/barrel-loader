@@ -5,9 +5,9 @@ This document explains how to publish barrel-loader to npm.
 ## Prerequisites
 
 Before publishing, ensure:
-1. All tests pass: `npm test` (or `pnpm test`)
-2. Build succeeds: `npm run build` (or `pnpm build`)
-3. Code is formatted and linted: `npm run format && npm run lint` (if available)
+1. All tests pass: `pnpm test`
+2. Build succeeds: `pnpm build`
+3. Code is formatted and linted: `pnpm fmt && pnpm lint`
 4. Package version is updated in `package.json`
 5. Changes are documented in CHANGELOG or commit message
 
@@ -34,13 +34,13 @@ For manual publishing without a release:
 
 ```bash
 # Update version
-npm version patch|minor|major
+pnpm version patch|minor|major
 
 # Build package
-npm run build
+pnpm build
 
 # Publish to npm (requires authentication)
-npm publish
+pnpm publish
 ```
 
 ## Publishing to GitHub Packages
@@ -114,6 +114,10 @@ Update `packages/node-utils/package.json` to `"private": false`
 - For npm: Check NPM_TOKEN is valid and has publish permissions
 - For GitHub: Check GitHub token has `write:packages` scope
 
+### Authentication errors
+- Run `pnpm login` to authenticate with npm registry
+- Verify your auth token in `~/.npmrc`
+
 ### Package already published for version X.Y.Z
 Increment the version number before retrying
 
@@ -131,8 +135,8 @@ After publishing, verify the package:
 
 ```bash
 # For npm
-npm view @sentenel/node-utils
+pnpm view barrel-loader
 
 # For GitHub Packages
-npm view @sentenel/node-utils --registry https://npm.pkg.github.com
+pnpm view barrel-loader --registry https://npm.pkg.github.com
 ```

@@ -1,47 +1,30 @@
-# INFO: if gitignore changes are not reflecting use below command, then commit as usual
-# > git rm -r --cached .
-
-# Python
-*.py[codz]
-__pycache__/
-.mypy_cache/
-.pytest_cache/
-.ruff_cache/
-.pdm-python
-*.egg-info/
-*.eggs/
-.venv/
-.env.local
-
-# Jupyter Notebook
-.ipynb_checkpoints/
-*.ipynb_checkpoints
-.jupyter/
-
-# Node.js
-node_modules
-pnpm-lock.yaml
-.pnpm-store/
-*.tsbuildinfo
-
 # Rust/Cargo
-/target/
-Cargo.lock
+target/
 *.rlib
 **/*.rs.bk
+*.pdb
+
+# Node.js / native addons
+node_modules/
+*.node
+native/
+dist/
 
 # Build outputs
-dist
-build
-.next/
+build/
 out/
+.next/
 
 # IDE
 .idea/
+.vscode/settings.json
+.DS_Store
 *.swp
 *.swo
 *~
-.DS_Store
+
+# Testing
+.rustup/
 
 # OS
 Thumbs.db

@@ -1,0 +1,29 @@
+# Rustfmt configuration for barrel-loader
+# https://rust-lang.github.io/rustfmt/
+
+edition = "2021"
+max_width = 100
+tab_spaces = 4
+newline_style = "Unix"
+
+# Import formatting
+imports_granularity = "Crate"
+group_imports = "StdExternalCrate"
+
+# Formatting options
+use_small_heuristics = "Default"
+fn_call_width = 80
+struct_lit_width = 80
+chain_width = 60
+
+# Code style
+use_field_init_shorthand = true
+format_code_in_doc_comments = true
+normalize_comments = true
+wrap_comments = true
+comment_width = 80
+
+# Misc
+reorder_imports = true
+reorder_modules = true
+remove_nested_parens = true
