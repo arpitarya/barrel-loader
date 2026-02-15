@@ -1,8 +1,8 @@
-use crate::barrel_loader::BarrelLoader;
-use crate::deduplication::remove_duplicates as remove_duplicates_internal;
-use crate::parser::parse_exports as parse_exports_internal;
-use crate::reconstruction::reconstruct_source as reconstruct_source_internal;
-use crate::sorting::sort_exports as sort_exports_internal;
+use super::barrel_loader::BarrelLoader;
+use super::deduplication::remove_duplicates as remove_duplicates_internal;
+use super::parser::parse_exports as parse_exports_internal;
+use super::reconstruction::reconstruct_source as reconstruct_source_internal;
+use super::sorting::sort_exports as sort_exports_internal;
 use crate::types::{BarrelLoaderOptions, ExportInfo};
 use napi::bindgen_prelude::*;
 use napi_derive::napi;

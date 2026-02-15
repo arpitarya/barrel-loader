@@ -16,6 +16,7 @@ NC='\033[0m' # No Color
 BUILD_TYPE="release"
 VERBOSE=0
 CLEAN=0
+BUILD_RUST=1
 BUILD_TS=1
 
 # Parse arguments
@@ -41,6 +42,10 @@ while [[ $# -gt 0 ]]; do
       BUILD_TS=0
       shift
       ;;
+    --node-only|--ts-only)
+      BUILD_RUST=0
+      shift
+      ;;
     --help|-h)
       echo "Usage: $0 [options]"
       echo ""
@@ -50,6 +55,7 @@ while [[ $# -gt 0 ]]; do
       echo "  --clean              Clean build artifacts before building"
       echo "  --verbose, -v        Show detailed build output"
       echo "  --rust-only          Build only the Rust addon (skip npm build)"
+      echo "  --node-only          Build only the TypeScript bundles (skip Rust build)"
       echo "  --help, -h           Show this help message"
       echo ""
       exit 0
@@ -98,77 +104,79 @@ if [ $CLEAN -eq 1 ]; then
   echo -e "${GREEN}✓ Cleaned${NC}"
 fi
 
-# Create native directory if it doesn't exist
-echo -e "\n${YELLOW}Setting up directories...${NC}"
-mkdir -p native
-echo -e "${GREEN}✓ Created native/$(NC)"
+if [ $BUILD_RUST -eq 1 ]; then
+  # Create native directory if it doesn't exist
+  echo -e "\n${YELLOW}Setting up directories...${NC}"
+  mkdir -p native
+  echo -e "${GREEN}✓ Created native/$(NC)"
 
-# Build
-echo -e "\n${YELLOW}Building Rust NAPI addon (${BUILD_TYPE})...${NC}"
+  # Build
+  echo -e "\n${YELLOW}Building Rust NAPI addon (${BUILD_TYPE})...${NC}"
 
-if [ $VERBOSE -eq 1 ]; then
-  if [ "$BUILD_TYPE" = "release" ]; then
-    cargo build --release
+  if [ $VERBOSE -eq 1 ]; then
+    if [ "$BUILD_TYPE" = "release" ]; then
+      cargo build --release
+    else
+      cargo build
+    fi
   else
-    cargo build
+    if [ "$BUILD_TYPE" = "release" ]; then
+      cargo build --release 2>&1 | grep -E "^(Compiling|Finished|error|warning:|   Compiling)" || true
+    else
+      cargo build 2>&1 | grep -E "^(Compiling|Finished|error|warning:|   Compiling)" || true
+    fi
   fi
-else
+
+  # Determine output directory
   if [ "$BUILD_TYPE" = "release" ]; then
-    cargo build --release 2>&1 | grep -E "^(Compiling|Finished|error|warning:|   Compiling)" || true
+    TARGET_DIR="target/release"
   else
-    cargo build 2>&1 | grep -E "^(Compiling|Finished|error|warning:|   Compiling)" || true
+    TARGET_DIR="target/debug"
   fi
-fi
 
-# Determine output directory
-if [ "$BUILD_TYPE" = "release" ]; then
-  TARGET_DIR="target/release"
-else
-  TARGET_DIR="target/debug"
-fi
+  # Find and copy the .node file
+  echo -e "\n${YELLOW}Copying native addon...${NC}"
 
-# Find and copy the .node file
-echo -e "\n${YELLOW}Copying native addon...${NC}"
+  # Determine platform-specific library name
+  case "$(uname -s)" in
+    Darwin*)
+      LIB_NAME="barrel_loader.dylib"
+      NODE_NAME="barrel_loader_rs.node"
+      ;;
+    Linux*)
+      LIB_NAME="barrel_loader.so"
+      NODE_NAME="barrel_loader_rs.node"
+      ;;
+    MINGW*|MSYS*|CYGWIN*)
+      LIB_NAME="barrel_loader.dll"
+      NODE_NAME="barrel_loader_rs.node"
+      ;;
+    *)
+      LIB_NAME="barrel_loader.so"
+      NODE_NAME="barrel_loader_rs.node"
+      ;;
+  esac
 
-# Determine platform-specific library name
-case "$(uname -s)" in
-  Darwin*)
-    LIB_NAME="barrel_loader.dylib"
-    NODE_NAME="barrel_loader_rs.node"
-    ;;
-  Linux*)
-    LIB_NAME="barrel_loader.so"
-    NODE_NAME="barrel_loader_rs.node"
-    ;;
-  MINGW*|MSYS*|CYGWIN*)
-    LIB_NAME="barrel_loader.dll"
-    NODE_NAME="barrel_loader_rs.node"
-    ;;
-  *)
-    LIB_NAME="barrel_loader.so"
-    NODE_NAME="barrel_loader_rs.node"
-    ;;
-esac
+  # Try to find and copy the compiled library
+  if [ -f "$TARGET_DIR/lib$LIB_NAME" ]; then
+    cp "$TARGET_DIR/lib$LIB_NAME" "native/$NODE_NAME"
+    echo -e "${GREEN}✓ Copied lib$LIB_NAME → native/$NODE_NAME${NC}"
+  elif [ -f "$TARGET_DIR/$LIB_NAME" ]; then
+    cp "$TARGET_DIR/$LIB_NAME" "native/$NODE_NAME"
+    echo -e "${GREEN}✓ Copied $LIB_NAME → native/$NODE_NAME${NC}"
+  else
+    echo -e "${RED}✗ Could not find compiled library${NC}"
+    echo "Expected: $TARGET_DIR/lib$LIB_NAME or $TARGET_DIR/$LIB_NAME"
+    exit 1
+  fi
 
-# Try to find and copy the compiled library
-if [ -f "$TARGET_DIR/lib$LIB_NAME" ]; then
-  cp "$TARGET_DIR/lib$LIB_NAME" "native/$NODE_NAME"
-  echo -e "${GREEN}✓ Copied lib$LIB_NAME → native/$NODE_NAME${NC}"
-elif [ -f "$TARGET_DIR/$LIB_NAME" ]; then
-  cp "$TARGET_DIR/$LIB_NAME" "native/$NODE_NAME"
-  echo -e "${GREEN}✓ Copied $LIB_NAME → native/$NODE_NAME${NC}"
-else
-  echo -e "${RED}✗ Could not find compiled library${NC}"
-  echo "Expected: $TARGET_DIR/lib$LIB_NAME or $TARGET_DIR/$LIB_NAME"
-  exit 1
-fi
-
-# Verify the addon loads
-echo -e "\n${YELLOW}Verifying addon...${NC}"
-if node -e "require('./native/$NODE_NAME'); console.log('✓ Addon loads successfully');" 2>/dev/null; then
-  echo -e "${GREEN}✓ Addon verification passed${NC}"
-else
-  echo -e "${YELLOW}⚠ Could not verify addon loading (may be expected on cross-platform builds)${NC}"
+  # Verify the addon loads
+  echo -e "\n${YELLOW}Verifying addon...${NC}"
+  if node -e "require('./native/$NODE_NAME'); console.log('✓ Addon loads successfully');" 2>/dev/null; then
+    echo -e "${GREEN}✓ Addon verification passed${NC}"
+  else
+    echo -e "${YELLOW}⚠ Could not verify addon loading (may be expected on cross-platform builds)${NC}"
+  fi
 fi
 
 # Build TypeScript outputs
@@ -190,8 +198,10 @@ echo -e "\n${BLUE}━━━━━━━━━━━━━━━━━━━━�
 echo -e "${GREEN}✓ Build Complete${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-echo "Output: $(pwd)/native/$NODE_NAME"
-echo "Size: $(du -h "native/$NODE_NAME" | cut -f1)"
+if [ $BUILD_RUST -eq 1 ]; then
+  echo "Output: $(pwd)/native/$NODE_NAME"
+  echo "Size: $(du -h "native/$NODE_NAME" | cut -f1)"
+fi
 echo ""
 echo "Next steps:"
 echo "  • Test: pnpm test"

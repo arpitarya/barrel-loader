@@ -3,7 +3,7 @@
  */
 
 export interface ExportInfo {
-  name: string;
+  specifier: string;
   source: string;
   export_type: 'named' | 'default' | 'namespace' | 'type';
   is_type_export: boolean;
@@ -45,8 +45,13 @@ export interface LoaderContext<T = unknown> {
 }
 
 export interface NativeAddon {
-  process_barrel_file?: (content: string, filePath: string) => ExportInfo[];
+  process_barrel_file?: (
+    content: string,
+    filePath: string,
+    options?: BarrelLoaderOptions
+  ) => string;
+  parse_exports_napi?: (content: string) => ExportInfo[];
   remove_duplicates?: (exports: ExportInfo[]) => ExportInfo[];
   sort_exports_napi?: (exports: ExportInfo[]) => ExportInfo[];
-  reconstruct_source_napi?: (exports: ExportInfo[]) => string;
+  reconstruct_source_napi?: (source: string, exports: ExportInfo[]) => string;
 }

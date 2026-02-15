@@ -1,7 +1,7 @@
-use crate::deduplication::remove_duplicates;
-use crate::parser::parse_exports;
-use crate::reconstruction::reconstruct_source;
-use crate::sorting::sort_exports;
+use super::super::deduplication::remove_duplicates;
+use super::super::parser::parse_exports;
+use super::super::reconstruction::reconstruct_source;
+use super::super::sorting::sort_exports;
 use crate::types::BarrelLoaderOptions;
 
 /// Process a barrel file with the given options
