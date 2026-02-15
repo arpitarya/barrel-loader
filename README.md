@@ -15,6 +15,17 @@ Automatically optimizes barrel files (index.ts/js/tsx/jsx) by removing duplicate
 ⚙️ **Zero Configuration** – Works out of the box with sensible defaults
 🔌 **Direct API** – Use as library or webpack/rspack loader
 
+## Documentation
+
+📖 **[View Comprehensive Examples →](docs/EXAMPLES.md)**
+
+Complete guide with real-world examples including:
+- Webpack & Rspack configurations
+- Direct API usage patterns
+- TypeScript integration
+- Monorepo setups
+- Troubleshooting guide
+
 ## Installation
 
 ```bash
@@ -465,6 +476,12 @@ cargo build --release --bin barrel-loader
 **Node.js Versions:**
 - Node.js 18+ (LTS)
 - Pre-built binaries available via npm/pnpm
+
+## Further Reading
+
+- **[Comprehensive Examples](docs/EXAMPLES.md)** – Real-world usage patterns and configurations
+- **[Publishing Guide](PUBLISHING.md)** – Release and distribution workflow
+- **[Build Documentation](BUILD.md)** – Detailed build instructions
 
 ## License
 
