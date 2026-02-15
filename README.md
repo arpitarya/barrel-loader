@@ -452,19 +452,6 @@ pnpm lint               # Check for issues
 pnpm fmt                # Format code
 ```
 
-## CLI Usage
-
-The package includes an optional CLI for standalone use:
-
-```bash
-# Process a barrel file
-node barrel-loader-utils.cjs src/index.ts
-
-# Or build and use the Rust CLI
-cargo build --release --bin barrel-loader
-./target/release/barrel-loader src/index.ts --sort
-```
-
 ## Supported Platforms
 
 **Operating Systems:**

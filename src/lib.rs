@@ -1,6 +1,5 @@
 // Module declarations
 mod barrel_loader;
-mod cli_args;
 mod deduplication;
 mod napi_bindings;
 mod parser;
