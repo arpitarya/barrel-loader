@@ -1,14 +1,13 @@
 import { defineConfig } from '@rslib/core';
 
 export default defineConfig({
+  source: {
+    entry: {
+      index: './src/index.ts',
+    },
+  },
   lib: [
     {
-      // Main loader entry
-      source: {
-        entry: {
-          index: './src/index.ts',
-        },
-      },
       format: 'cjs',
       output: {
         distPath: {
@@ -22,20 +21,15 @@ export default defineConfig({
       dts: false,
     },
     {
-      // Barrel loader utilities
-      source: {
-        entry: {
-          'barrel-loader-utils': './src/barrel-loader-utils.ts',
-        },
-      },
-      format: 'cjs',
+      format: 'esm',
       output: {
         distPath: {
           root: './dist',
         },
         filename: {
-          js: '[name].cjs',
+          js: '[name].mjs',
         },
+        cleanDistPath: true,
       },
       dts: false,
     },

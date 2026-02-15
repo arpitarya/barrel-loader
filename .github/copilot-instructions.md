@@ -30,11 +30,10 @@
    - **reconstruct.ts** - Reconstruction of optimized source code
    - **resolve-barrel.ts** - Recursive barrel file resolution
    - **resolve-utils.ts** - Helper utilities for file resolution
-   - **transform.ts** - Re-export aggregator for transformation functions
-   - **barrel-loader-utils.ts** - Re-export aggregator for public API
+   - **barrel-loader.utils.ts** - Internal utilities entry (not exported)
    - **native-addon.ts** - Native Rust addon loading with fallback
 
-3. **Type Definitions** (`src/types.ts`):
+3. **Type Definitions** (`src/barrel-loader.types.ts`):
    - Core type definitions for loader and exports
    - Webpack/Rspack loader context types
 
@@ -43,21 +42,18 @@
 ### ExportInfo Structure
 ```typescript
 {
-  specifier: string;      // Export name (e.g., "MyComponent")
-  source: string;         // Import source (e.g., "./components/MyComponent")
-  export_type: string;    // "named" | "default" | "namespace"
-  is_type_export: boolean;// TypeScript type vs value export
-  line: number;           // Line number in source file
+   name: string;           // Export name (e.g., "MyComponent")
+   source: string;         // Import source (e.g., "./components/MyComponent")
+   export_type: string;    // "named" | "default" | "namespace" | "type"
+   is_type_export: boolean;// TypeScript type vs value export
 }
 ```
 
 ### Loader Options
-- `optimize`: Enable optimization (default: true)
 - `sort`: Sort exports alphabetically (default: false)
-- `remove_duplicates`: Remove duplicate exports (default: true)
+- `removeDuplicates`: Remove duplicate exports (default: true)
 - `verbose`: Enable logging (default: false)
-- `convert_namespace_to_named`: Convert `export * as` to named exports (default: false)
-- `resolve_barrel_exports`: Recursively resolve barrel files (default: false)
+- `resolveBarrelFiles`: Recursively resolve barrel files (default: true)
 
 ## Development Patterns
 
@@ -108,6 +104,14 @@
   - Ensures IDE intellisense matches the actual linter version
   - Updates automatically when dependencies are upgraded
 
+## Supported Platforms
+
+**Operating Systems:**
+- **Linux** (x64, arm64)
+- **macOS** (x64, arm64/Apple Silicon)
+
+**Note:** Windows is not officially supported. The native Rust module is built for Unix-like systems.
+
 ## Build System
 
 ### Build Scripts
@@ -118,8 +122,8 @@
 
 ### Output Locations
 - Rust: `native/barrel_loader_rs.node` (copied from target/release)
-- TypeScript: `dist/index.cjs`, `dist/barrel-loader-utils.cjs`
-- Types: `dist/index.d.cts`, `dist/barrel-loader-utils.d.cts`
+- TypeScript: `dist/index.cjs`, `dist/index.mjs`
+- Types: `dist/index.d.cts`
 
 ## Testing
 
@@ -139,7 +143,7 @@
 ### Modifying Loader Behavior
 1. Update `src/barrel-loader.ts` main loader function
 2. Adjust `resolveBarrelExportsRecursive` in `src/resolve-barrel.ts` if needed
-3. Update `BarrelLoaderOptions` in `src/types.ts`
+3. Update `BarrelLoaderOptions` in `src/barrel-loader.types.ts`
 4. Rebuild: `pnpm build:ts`
 
 ### Performance Optimization
@@ -154,7 +158,7 @@
 - `src/index.ts`: Export-only entry point (7 lines)
 - `src/barrel-loader.ts`: Main webpack/rspack loader (42 lines)
 - `src/barrel-loader.types.ts`: TypeScript type definitions (52 lines)
-- `src/barrel-loader-utils.ts`: Direct API re-export aggregator (8 lines)
+- `src/barrel-loader.utils.ts`: Internal utilities entry (8 lines)
 - `src/utils/parse.ts`: Export parsing from Rust addon (25 lines)
 - `src/utils/dedupe.ts`: Deduplication logic (31 lines)
 - `src/utils/sort.ts`: Sorting logic (24 lines)

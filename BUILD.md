@@ -10,7 +10,7 @@ barrel-loader consists of two main components:
 
 The build process compiles both components:
 1. Rust code → native Node.js addon (`.node` file)
-2. TypeScript code → CommonJS modules (`.cjs` files) using rslib bundler
+2. TypeScript code → CommonJS and ESM bundles (`.cjs`, `.mjs`) using rslib
 
 ## Automated Setup
 
@@ -55,9 +55,9 @@ pnpm test
 | Command | Description |
 |---------|-------------|
 | `pnpm build` | Build both Rust addon and TypeScript files |
-| `pnpm build:rust` | Build Rust NAPI addon only |
+| `pnpm build:rust` | Build Rust NAPI addon only (cargo build + native copy) |
 | `pnpm build:ts` | Build TypeScript files only (using rslib) |
-| `pnpm build:debug` | Build debug binary (faster compile, slower runtime) |
+| `pnpm build:debug` | Build debug Rust addon + TypeScript bundles |
 | `pnpm build:clean` | Clean and rebuild everything |
 | `pnpm test` | Run JavaScript functional tests |
 | `pnpm test:rust` | Run Rust unit tests with rstest |
@@ -101,7 +101,7 @@ REM Remove everything
 clean.bat --all
 ```
 
-### Using build scripts directly
+### Using build scripts directly (local use only)
 
 #### macOS/Linux
 
@@ -190,6 +190,7 @@ When you run any `cargo` or `rustup` command in the project directory, rustup au
 Cargo build configuration including:
 - Incremental compilation for faster rebuilds
 - Platform-specific linker flags for macOS, Linux, and Windows
+- Rust flags enforcing no `unsafe` (`-Funsafe-code`)
 - Development and release profile optimizations
 
 ### `clippy.toml`
