@@ -1,6 +1,6 @@
 {
   "name": "@sentenel/barrel-loader",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "High-performance barrel file loader for webpack/rspack using Rust NAPI bindings",
   "license": "MIT",
   "author": "Arpit Arya <arpitarya@users.noreply.github.com>",
