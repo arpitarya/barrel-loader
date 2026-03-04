@@ -5,10 +5,15 @@
   "license": "MIT",
   "author": "Arpit Arya <arpitarya@users.noreply.github.com>",
   "type": "module",
+  "private": false,
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "packageManager": "pnpm@10.28.2",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "engines": {
     "node": ">=18.0.0"
   },
