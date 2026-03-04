@@ -21,11 +21,6 @@ The easiest way to get started is using the automated setup script:
 ./setup.sh
 ```
 
-**Windows:**
-```batch
-setup.bat
-```
-
 This will automatically:
 - ✓ Check and install Rust (via rustup)
 - ✓ Verify Node.js is installed (v18+)
@@ -89,18 +84,6 @@ pnpm test
 ./clean.sh --all --verbose
 ```
 
-**Windows:**
-```batch
-REM Remove build artifacts only
-clean.bat
-
-REM Remove build artifacts + dependencies
-clean.bat --deps
-
-REM Remove everything
-clean.bat --all
-```
-
 ### Using build scripts directly (local use only)
 
 #### macOS/Linux
@@ -125,25 +108,6 @@ clean.bat --all
 ./build.sh --help
 ```
 
-#### Windows
-
-```batch
-REM Release build (default)
-build.bat
-
-REM Debug build
-build.bat --debug
-
-REM Clean build
-build.bat --clean
-
-REM Verbose output
-build.bat --verbose
-
-REM Help
-build.bat --help
-```
-
 ## Prerequisites
 
 ### macOS
@@ -165,15 +129,6 @@ sudo apt-get install build-essential
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-### Windows
-1. Download Rust installer from https://rustup.rs/
-2. Run the installer and follow the instructions
-3. Verify installation:
-   ```batch
-   rustc --version
-   cargo --version
-   ```
-
 ## Rust Toolchain Configuration
 
 The project includes Rust toolchain configuration files that are automatically detected by `rustup`:
@@ -189,7 +144,7 @@ When you run any `cargo` or `rustup` command in the project directory, rustup au
 ### `.cargo/config.toml`
 Cargo build configuration including:
 - Incremental compilation for faster rebuilds
-- Platform-specific linker flags for macOS, Linux, and Windows
+- Platform-specific linker flags for macOS and Linux
 - Rust flags enforcing no `unsafe` (`-Funsafe-code`)
 - Development and release profile optimizations
 
@@ -249,8 +204,6 @@ Ensure Rust is installed and on your PATH:
 # macOS/Linux
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source $HOME/.cargo/env
-
-# Windows - Use rustup installer
 ```
 
 ### Build fails with compiler errors
@@ -447,14 +400,6 @@ Tested on Ubuntu 20.04+. Ensure you have build tools:
 ```bash
 sudo apt-get install build-essential
 pnpm build
-```
-
-### Windows
-
-Requires Visual Studio Build Tools or MinGW. The build script handles detection.
-
-```batch
-build.bat                     # Builds for current architecture
 ```
 
 ## Performance Tips

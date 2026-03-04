@@ -129,6 +129,7 @@ function processExportEntry(
   visited: Set<string>,
   resolveRecursive: (
     path: string,
+    // @ts-expect-error
     fs: typeof fs,
     options: BarrelLoaderOptions,
     visited: Set<string>

@@ -88,13 +88,13 @@ if ! command -v cargo &> /dev/null; then
   echo "Install from: https://rustup.rs/"
   exit 1
 fi
-echo -e "${GREEN}✓ Cargo$(NC) $(cargo --version)"
+echo -e "${GREEN}✓ Cargo${NC} $(cargo --version)"
 
 if ! command -v node &> /dev/null; then
   echo -e "${RED}✗ Node.js not found${NC}"
   exit 1
 fi
-echo -e "${GREEN}✓ Node.js$(NC) $(node --version)"
+echo -e "${GREEN}✓ Node.js${NC} $(node --version)"
 
 # Clean if requested
 if [ $CLEAN -eq 1 ]; then
@@ -108,7 +108,7 @@ if [ $BUILD_RUST -eq 1 ]; then
   # Create native directory if it doesn't exist
   echo -e "\n${YELLOW}Setting up directories...${NC}"
   mkdir -p native
-  echo -e "${GREEN}✓ Created native/$(NC)"
+  echo -e "${GREEN}✓ Created native/${NC}"
 
   # Build
   echo -e "\n${YELLOW}Building Rust NAPI addon (${BUILD_TYPE})...${NC}"

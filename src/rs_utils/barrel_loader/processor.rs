@@ -14,7 +14,7 @@ pub fn process_file(
         eprintln!("[barrel-loader] Processing barrel file: {file_path}");
     }
 
-    let mut exports = parse_exports(source)?;
+    let mut exports: Vec<crate::ExportInfo> = parse_exports(source)?;
 
     if exports.is_empty() {
         if options.verbose.unwrap_or(false) {
@@ -25,7 +25,7 @@ pub fn process_file(
 
     // Remove duplicates if requested
     if options.remove_duplicates.unwrap_or(true) {
-        let before = exports.len();
+        let before: usize = exports.len();
         exports = remove_duplicates(exports);
         if options.verbose.unwrap_or(false) && exports.len() < before {
             eprintln!(
@@ -45,7 +45,7 @@ pub fn process_file(
     }
 
     // Reconstruct source
-    let transformed = reconstruct_source(source, exports);
+    let transformed: String = reconstruct_source(source, exports);
 
     if options.verbose.unwrap_or(false) && transformed != source {
         eprintln!("[barrel-loader] Transformed barrel file: {file_path}");

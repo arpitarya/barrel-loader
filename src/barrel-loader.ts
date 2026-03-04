@@ -1,14 +1,18 @@
-/**
- * Webpack/Rspack loader that uses the Rust-based barrel-loader addon
- * This is a drop-in replacement for the TypeScript loader
- */
-
 import * as fs from 'node:fs';
 import type { BarrelLoaderOptions, LoaderContext } from './barrel-loader.types';
-import { removeDuplicates } from './ts-utils/dedupe';
+import { getDedupedExports } from './ts-utils/dedupe';
 import { reconstructSource } from './ts-utils/reconstruct';
 import { resolveBarrelExportsRecursive } from './ts-utils/resolve-barrel';
 import { sortExports } from './ts-utils/sort';
+
+function logVerbose(verbose: boolean, message: string, details?: Record<string, unknown>): void {
+  if (!verbose) return;
+  if (details) {
+    console.log(`[barrel-loader] ${message} ${JSON.stringify(details)}`);
+    return;
+  }
+  console.log(`[barrel-loader] ${message}`);
+}
 
 /**
  * Main loader function for webpack/rspack
@@ -34,44 +38,26 @@ function barrelLoaderRust(
       `Processing: ${filePath}\nOptions: ${JSON.stringify(options)}\n\n`
     );
   } catch (e) {
-    // Ignore
+    console.error('barrel-loader: Failed to write debug log', e);
   }
 
-  const logVerbose = (message: string, details?: Record<string, unknown>): void => {
-    if (!verbose) return;
-    if (details) {
-      console.log(`[barrel-loader] ${message} ${JSON.stringify(details)}`);
-      return;
-    }
-    console.log(`[barrel-loader] ${message}`);
-  };
+  logVerbose(verbose, 'Start', { filePath });
 
-  // Use Node.js fs directly since webpack's virtual fs has different API
-  logVerbose('Start', { filePath });
-
-  let exports = resolveBarrelExportsRecursive(filePath, fs, options);
-  logVerbose('Resolved exports', {
+  const exports = resolveBarrelExportsRecursive(filePath, fs, options);
+  logVerbose(verbose, 'Resolved exports', {
     total: exports.length,
     typeExports: exports.filter((exp) => exp.is_type_export).length,
     namespaceExports: exports.filter((exp) => exp.export_type === 'namespace').length,
   });
 
-  if (exports.length === 0) {
-    logVerbose('No exports resolved, returning original content');
-    if (this.sourceMap && this.callback) {
-      this.callback(null, _content, null);
-      return;
-    }
-    return _content;
-  }
+  const dedupedExports = getDedupedExports(exports);
+  logVerbose(verbose, 'Removed duplicates', { total: dedupedExports.length });
 
-  exports = removeDuplicates(exports);
-  logVerbose('Removed duplicates', { total: exports.length });
-  exports = sortExports(exports);
-  logVerbose('Sorted exports', { total: exports.length });
+  const sortedExports = sortExports(dedupedExports);
+  logVerbose(verbose, 'Sorted exports', { total: sortedExports.length });
 
-  const result = reconstructSource(exports);
-  logVerbose('Reconstructed source', { length: result.length });
+  const result = reconstructSource(sortedExports);
+  logVerbose(verbose, 'Reconstructed source', {});
 
   if (this.sourceMap && this.callback) {
     this.callback(null, result, null);
@@ -81,7 +67,7 @@ function barrelLoaderRust(
   if (process.env.BARREL_LOADER_DEBUG === 'true') {
     const debugPath = filePath.replace('.ts', '.debug.ts');
     fs.writeFileSync(debugPath, result, 'utf-8');
-    logVerbose('Wrote debug output', { debugPath });
+    logVerbose(verbose, 'Wrote debug output', { debugPath });
   }
 
   return result;

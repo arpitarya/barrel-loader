@@ -10,6 +10,7 @@ const config: RslibConfig = {
       bundle: false,
       output: {
         distPath: './dist',
+        cleanDistPath: true,
       },
     },
     {
@@ -18,6 +19,7 @@ const config: RslibConfig = {
       bundle: false,
       output: {
         distPath: './dist',
+        cleanDistPath: true,
       },
     },
   ],
@@ -28,6 +30,7 @@ const config: RslibConfig = {
   },
   tools: {
     rspack: {
+      cache: false,
       module: {
         rules: [
           {

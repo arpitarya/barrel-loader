@@ -2,14 +2,14 @@
  * Type definitions for barrel-loader
  */
 
-export interface ExportInfo {
+interface ExportInfo {
   specifier: string;
   source: string;
   export_type: 'named' | 'default' | 'namespace' | 'type';
   is_type_export: boolean;
 }
 
-export interface BarrelLoaderOptions {
+interface BarrelLoaderOptions {
   /**
    * Enable/disable recursive barrel file resolution
    * @default true
@@ -41,7 +41,7 @@ export interface BarrelLoaderOptions {
   verbose?: boolean;
 }
 
-export interface LoaderContext<T = unknown> {
+interface LoaderContext<T = unknown> {
   resourcePath?: string;
   resource?: string;
   fs?: typeof import('fs');
@@ -50,7 +50,7 @@ export interface LoaderContext<T = unknown> {
   getOptions?: () => T;
 }
 
-export interface NativeAddon {
+interface NativeAddon {
   process_barrel_file?: (
     content: string,
     filePath: string,
@@ -61,3 +61,5 @@ export interface NativeAddon {
   sort_exports_napi?: (exports: ExportInfo[]) => ExportInfo[];
   reconstruct_source_napi?: (source: string, exports: ExportInfo[]) => string;
 }
+
+export type { ExportInfo, BarrelLoaderOptions, LoaderContext, NativeAddon };
