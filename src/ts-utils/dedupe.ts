@@ -6,28 +6,18 @@ import { nativeAddon } from './native-addon';
  * @param exports - Array of export objects
  * @returns Deduplicated exports
  */
-function removeDuplicates(exports: ExportInfo[]): ExportInfo[] {
-  if (nativeAddon?.remove_duplicates) {
-    try {
-      return nativeAddon.remove_duplicates(exports);
-    } catch (err) {
-      const error = err as Error;
-      console.warn('Native addon error, falling back to JavaScript:', error.message);
-    }
+function getDedupedExports(exports: ExportInfo[]): ExportInfo[] {
+  if (!nativeAddon?.remove_duplicates) {
+    throw new Error('Native addon not available');
   }
 
-  const seen = new Map<string, boolean>();
-  const deduped: ExportInfo[] = [];
-
-  for (const exp of exports) {
-    const key = `${exp.specifier}:${exp.source}:${exp.export_type}`;
-    if (!seen.has(key)) {
-      seen.set(key, true);
-      deduped.push(exp);
-    }
+  try {
+    return nativeAddon.remove_duplicates(exports);
+  } catch (err) {
+    const error = err as Error;
+    console.warn('Native addon error, falling back to JavaScript:', error.message);
+    throw error;
   }
-
-  return deduped;
 }
 
-export { removeDuplicates };
+export { getDedupedExports };

@@ -1,0 +1,28 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "useGitignore": true,
+  "dictionaries": [
+    "general"
+  ],
+  "dictionaryDefinitions": [
+    {
+      "name": "general",
+      "path": "./.cspell/general.cspell.txt",
+      "addWords": true
+    }
+  ],
+  "ignorePaths": [
+    "target/**",
+    "dist/**",
+    "native/**",
+    "node_modules/**",
+    "build/**",
+    "out/**",
+    "**/*.node",
+    "pnpm-lock.yaml"
+  ],
+  "files": [
+    "**/*.{md,txt,ts,tsx,js,jsx,cjs,mjs,json,rs,toml,yaml,yml}"
+  ]
+}

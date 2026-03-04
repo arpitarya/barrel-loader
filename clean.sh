@@ -16,6 +16,7 @@ NC='\033[0m' # No Color
 CLEAN_DEPS=0
 CLEAN_ALL=0
 VERBOSE=0
+DRY_RUN=0
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -33,6 +34,10 @@ while [[ $# -gt 0 ]]; do
       VERBOSE=1
       shift
       ;;
+    --dry-run)
+      DRY_RUN=1
+      shift
+      ;;
     --help|-h)
       echo "Usage: $0 [options]"
       echo ""
@@ -40,6 +45,7 @@ while [[ $# -gt 0 ]]; do
       echo "  --deps               Remove node_modules and Rust cache"
       echo "  --all                Remove everything (deps + all build artifacts)"
       echo "  --verbose, -v        Show detailed output"
+      echo "  --dry-run            Preview what would be removed"
       echo "  --help, -h           Show this help message"
       echo ""
       echo "Default (no flags): Removes build artifacts only"
@@ -62,14 +68,37 @@ echo ""
 remove_item() {
   local item=$1
   local description=$2
+  local matches=()
+  local match
 
-  if [ -e "$item" ]; then
-    if [ $VERBOSE -eq 1 ]; then
-      echo -e "${YELLOW}Removing $description: $item${NC}"
-      du -sh "$item" 2>/dev/null || true
+  while IFS= read -r match; do
+    matches+=("$match")
+  done < <(
+    find . -mindepth 1 \
+      \( -type d \( -name ".git" -o -name "node_modules" -o -name "target" -o -name ".pnpm-store" \) ! -name "$item" -prune \) -o \
+      \( -name "$item" -print \)
+  )
+
+  if [ ${#matches[@]} -gt 0 ]; then
+    if [ $DRY_RUN -eq 1 ]; then
+      echo -e "${BLUE}⊘ [dry-run] Would remove $description (${#matches[@]} item(s))${NC}"
+      for match in "${matches[@]}"; do
+        echo "  - $match"
+        if [ $VERBOSE -eq 1 ]; then
+          du -sh "$match" 2>/dev/null || true
+        fi
+      done
+    else
+      if [ $VERBOSE -eq 1 ]; then
+        echo -e "${YELLOW}Removing $description recursively: $item${NC}"
+        for match in "${matches[@]}"; do
+          echo "  - $match"
+          du -sh "$match" 2>/dev/null || true
+        done
+      fi
+      rm -rf "${matches[@]}"
+      echo -e "${GREEN}✓ Removed $description (${#matches[@]} item(s))${NC}"
     fi
-    rm -rf "$item"
-    echo -e "${GREEN}✓ Removed $description${NC}"
   else
     if [ $VERBOSE -eq 1 ]; then
       echo -e "${BLUE}⊘ $description not found (already clean)${NC}"
@@ -106,8 +135,12 @@ if [ $CLEAN_DEPS -eq 1 ]; then
     if [ $VERBOSE -eq 1 ]; then
       du -sh "$HOME/.cargo/registry" 2>/dev/null || true
     fi
-    cargo clean
-    echo -e "${GREEN}✓ Cleaned Cargo cache${NC}"
+    if [ $DRY_RUN -eq 1 ]; then
+      echo -e "${BLUE}⊘ [dry-run] Would run cargo clean${NC}"
+    else
+      cargo clean
+      echo -e "${GREEN}✓ Cleaned Cargo cache${NC}"
+    fi
   fi
 
   echo ""
@@ -118,6 +151,11 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo -e "${GREEN}✓ Clean Complete${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
+
+if [ $DRY_RUN -eq 1 ]; then
+  echo -e "${BLUE}Mode: dry-run (no files were removed)${NC}"
+  echo ""
+fi
 
 if [ $CLEAN_DEPS -eq 1 ]; then
   echo "Cleaned: Build artifacts + dependencies"
@@ -136,4 +174,5 @@ echo ""
 echo "For more aggressive cleaning, use:"
 echo "  • ${YELLOW}./clean.sh --deps${NC}     (remove dependencies)"
 echo "  • ${YELLOW}./clean.sh --all${NC}      (remove everything)"
+echo "  • ${YELLOW}./clean.sh --dry-run${NC}  (preview removals only)"
 echo ""

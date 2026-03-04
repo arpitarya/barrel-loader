@@ -14,18 +14,18 @@ pub fn process_barrel_file(
     file_path: String,
     options: Option<BarrelLoaderOptions>,
 ) -> Result<String> {
-    let opts = options.unwrap_or_default();
-    let loader = BarrelLoader::new(opts);
+    let opts: BarrelLoaderOptions = options.unwrap_or_default();
+    let loader: BarrelLoader = BarrelLoader::new(opts);
     loader
         .process(&source, &file_path)
-        .map_err(|e| napi::Error::new(napi::Status::GenericFailure, e))
+        .map_err(|e: String| napi::Error::new(napi::Status::GenericFailure, e))
 }
 
 #[napi]
 #[allow(clippy::needless_pass_by_value)]
 pub fn parse_exports_napi(source: String) -> Result<Vec<ExportInfo>> {
     parse_exports_internal(&source)
-        .map_err(|e| napi::Error::new(napi::Status::GenericFailure, e))
+        .map_err(|e: String| napi::Error::new(napi::Status::GenericFailure, e))
 }
 
 #[napi]

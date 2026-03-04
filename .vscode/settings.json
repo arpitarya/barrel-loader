@@ -3,14 +3,21 @@
   "biome.enabled": true,
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
-    "source.fixAll.ruff": "explicit",
     "source.fixAll.biome": "explicit",
-    "source.organizeImports.biome": "explicit"
+    "source.organizeImports.biome": "explicit",
+    "source.fixAll.pylance": "explicit"
   },
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "biomejs.biome",
   "biome.suggestInstallingGlobally": false,
+  "rust-analyzer.checkOnSave": true,
+  "rust-analyzer.check.command": "clippy",
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+    "editor.formatOnSave": true
+  },
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features"
-  }
+  },
+  "kiroAgent.configureMCP": "Disabled"
 }

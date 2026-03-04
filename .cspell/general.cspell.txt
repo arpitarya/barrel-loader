@@ -8,3 +8,4 @@ rstest
 SENTENEL
 venv
 webpack
+rustup

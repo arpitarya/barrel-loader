@@ -7,10 +7,14 @@
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.cts",
+  "types": "./dist/index.d.ts",
+  "packageManager": "pnpm@10.28.2",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "exports": {
     ".": {
-      "types": "./dist/index.d.cts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     }
@@ -25,9 +29,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/arpitarya/barrel-loader.git"
-  },
-  "engines": {
-    "node": ">=18.0.0"
   },
   "os": [
     "darwin",
@@ -70,5 +71,7 @@
     "@types/node": "22.10.5",
     "typescript": "5.7.3"
   },
-  "packageManager": "pnpm@10.28.2"
+  "dependencies": {
+    "@sentenel/node-utils": "0.1.4"
+  }
 }

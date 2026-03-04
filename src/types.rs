@@ -7,8 +7,10 @@ use serde::{Deserialize, Serialize};
 pub struct ExportInfo {
     pub specifier: String,
     pub source: String,
+    #[napi(js_name = "export_type")]
     #[serde(rename = "type")]
     pub export_type: String, // "named" | "default" | "namespace"
+    #[napi(js_name = "is_type_export")]
     pub is_type_export: bool,
     pub line: u32,
 }
