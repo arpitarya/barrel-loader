@@ -3,7 +3,7 @@
  * Run with: node test.cjs or pnpm test
  */
 
-const addon = require("./barrel-loader-utils.cjs");
+const addon = require('./native/barrel_loader_rs.node');
 
 let passed = 0;
 let failed = 0;
@@ -19,7 +19,7 @@ function assert(condition, message) {
 }
 
 function testParseExports() {
-  console.log("\n--- Testing parseExports ---");
+  console.log('\n--- Testing parseExportsNapi ---');
 
   const barrelContent = `
 export { default } from './component.tsx';
@@ -28,72 +28,111 @@ export type { ButtonProps } from './button.tsx';
 export * from './utils/index.ts';
   `;
 
-  const exports = addon.parseExports(barrelContent, "index.ts");
+  const exports = addon.parseExportsNapi(barrelContent);
 
-  assert(Array.isArray(exports), "parseExports returns array");
-  assert(exports.length > 0, "parseExports finds exports");
+  assert(Array.isArray(exports), 'parseExportsNapi returns array');
+  assert(exports.length > 0, 'parseExportsNapi finds exports');
   assert(
-    exports.some((e) => e.name === "Button"),
-    "Button export found",
+    exports.some((e) => e.specifier === 'Button'),
+    'Button export found'
   );
   assert(
-    exports.some((e) => e.export_type === "type"),
-    "Type export found",
+    exports.some((e) => e.is_type_export === true),
+    'Type export found'
   );
 }
 
 function testRemoveDuplicates() {
-  console.log("\n--- Testing removeDuplicates ---");
+  console.log('\n--- Testing removeDuplicates ---');
 
   const exports = [
-    { name: "Button", source: "./button.ts", export_type: "named", is_type_export: false },
-    { name: "Button", source: "./button.ts", export_type: "named", is_type_export: false },
-    { name: "Input", source: "./input.ts", export_type: "named", is_type_export: false },
+    {
+      specifier: 'Button',
+      source: './button.ts',
+      export_type: 'named',
+      is_type_export: false,
+      line: 1,
+    },
+    {
+      specifier: 'Button',
+      source: './button.ts',
+      export_type: 'named',
+      is_type_export: false,
+      line: 2,
+    },
+    {
+      specifier: 'Input',
+      source: './input.ts',
+      export_type: 'named',
+      is_type_export: false,
+      line: 3,
+    },
   ];
 
   const deduped = addon.removeDuplicates(exports);
 
-  assert(deduped.length === 2, "removeDuplicates reduces array");
+  assert(deduped.length === 2, 'removeDuplicates reduces array');
   assert(
-    deduped.every((e) => typeof e.name === "string"),
-    "All exports have name",
+    deduped.every((e) => typeof e.specifier === 'string'),
+    'All exports have specifier'
   );
 }
 
 function testSortExports() {
-  console.log("\n--- Testing sortExports ---");
+  console.log('\n--- Testing sortExportsNapi ---');
 
   const exports = [
-    { name: "Zebra", source: "./z.ts", export_type: "named", is_type_export: false },
-    { name: "Apple", source: "./a.ts", export_type: "named", is_type_export: false },
-    { name: "Banana", source: "./b.ts", export_type: "named", is_type_export: false },
+    { specifier: 'Zebra', source: './z.ts', export_type: 'named', is_type_export: false, line: 1 },
+    { specifier: 'Apple', source: './a.ts', export_type: 'named', is_type_export: false, line: 2 },
+    { specifier: 'Banana', source: './b.ts', export_type: 'named', is_type_export: false, line: 3 },
   ];
 
-  const sorted = addon.sortExports(exports);
+  const sorted = addon.sortExportsNapi(exports);
 
-  assert(sorted[0].name === "Apple", "First export is Apple");
-  assert(sorted[1].name === "Banana", "Second export is Banana");
-  assert(sorted[2].name === "Zebra", "Third export is Zebra");
+  assert(sorted[0].specifier === 'Apple', 'First export is Apple');
+  assert(sorted[1].specifier === 'Banana', 'Second export is Banana');
+  assert(sorted[2].specifier === 'Zebra', 'Third export is Zebra');
 }
 
 function testReconstructSource() {
-  console.log("\n--- Testing reconstructSource ---");
+  console.log('\n--- Testing reconstructSourceNapi ---');
 
   const exports = [
-    { name: "Button", source: "./button.ts", export_type: "named", is_type_export: false },
-    { name: "Input", source: "./input.ts", export_type: "named", is_type_export: false },
-    { name: "ButtonProps", source: "./button.ts", export_type: "type", is_type_export: true },
+    {
+      specifier: 'Button',
+      source: './button.ts',
+      export_type: 'named',
+      is_type_export: false,
+      line: 1,
+    },
+    {
+      specifier: 'Input',
+      source: './input.ts',
+      export_type: 'named',
+      is_type_export: false,
+      line: 2,
+    },
+    {
+      specifier: 'ButtonProps',
+      source: './button.ts',
+      export_type: 'named',
+      is_type_export: true,
+      line: 3,
+    },
   ];
 
-  const source = addon.reconstructSource(exports);
+  const source = addon.reconstructSourceNapi('', exports);
 
-  assert(typeof source === "string", "reconstructSource returns string");
-  assert(source.includes("export"), "Output contains export statement");
-  assert(source.includes("Button") || source.length === 0, "Output contains expected content or is empty");
+  assert(typeof source === 'string', 'reconstructSourceNapi returns string');
+  assert(source.includes('export'), 'Output contains export statement');
+  assert(
+    source.includes('Button') || source.length === 0,
+    'Output contains expected content or is empty'
+  );
 }
 
 function testIntegration() {
-  console.log("\n--- Testing Integration ---");
+  console.log('\n--- Testing Integration ---');
 
   const barrelContent = `
 export { Component } from './component.tsx';
@@ -102,13 +141,13 @@ export { Button, Input } from './ui/index.ts';
 export type { ButtonProps } from './ui/button.tsx';
   `;
 
-  let exports = addon.parseExports(barrelContent, "index.ts");
+  let exports = addon.parseExportsNapi(barrelContent);
   exports = addon.removeDuplicates(exports);
-  exports = addon.sortExports(exports);
-  const result = addon.reconstructSource(exports);
+  exports = addon.sortExportsNapi(exports);
+  const result = addon.reconstructSourceNapi('', exports);
 
-  assert(typeof result === "string", "Full pipeline works");
-  assert(result.split("\n").length > 0, "Pipeline produces output");
+  assert(typeof result === 'string', 'Full pipeline works');
+  assert(result.split('\n').length > 0, 'Pipeline produces output');
 }
 
 // Run all tests
@@ -119,17 +158,16 @@ try {
   testReconstructSource();
   testIntegration();
 
-  console.log(`\n========================================`);
+  console.log('\n========================================');
   console.log(`Tests passed: ${passed}`);
   console.log(`Tests failed: ${failed}`);
-  console.log(`========================================`);
+  console.log('========================================');
 
   if (failed > 0) {
     process.exit(1);
   }
 } catch (err) {
-  console.error("\nTest execution failed:", err);
-  console.error("\nNote: If native addon is not available, the functions return empty results.");
-  console.error("This is expected before running: pnpm build");
+  console.error('\nTest execution failed:', err);
+  console.error('\nNote: Ensure native addon exists by running: pnpm build');
   process.exit(1);
 }
