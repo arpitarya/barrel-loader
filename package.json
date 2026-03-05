@@ -1,6 +1,6 @@
 {
-  "name": "@sentenel/barrel-loader",
-  "version": "0.1.1",
+  "name": "@apec1/barrel-loader",
+  "version": "1.0.0",
   "description": "High-performance barrel file loader for webpack/rspack using Rust NAPI bindings",
   "license": "MIT",
   "author": "Arpit Arya <arpitarya@users.noreply.github.com>",
@@ -77,6 +77,6 @@
     "typescript": "5.7.3"
   },
   "dependencies": {
-    "@sentenel/node-utils": "0.1.4"
+    "@apec1/node-utils": "1.0.0"
   }
 }

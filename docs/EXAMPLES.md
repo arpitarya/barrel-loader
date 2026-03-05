@@ -21,9 +21,9 @@ Practical examples for using barrel-loader in your webpack/rspack projects.
 Install the package:
 
 ```bash
-pnpm add barrel-loader
+pnpm add @apec1/barrel-loader
 # or
-npm install barrel-loader
+npm install @apec1/barrel-loader
 ```
 
 Add to your bundler config:
@@ -35,7 +35,7 @@ module.exports = {
     rules: [
       {
         test: /\/index\.(ts|tsx|js|jsx)$/,
-        use: 'barrel-loader'
+        use: '@apec1/barrel-loader'
       }
     ]
   }
@@ -57,7 +57,7 @@ module.exports = {
     rules: [
       {
         test: /\/index\.(ts|tsx|js|jsx)$/,
-        loader: 'barrel-loader',
+        loader: '@apec1/barrel-loader',
         options: {
           sort: true,
           removeDuplicates: true,
@@ -81,7 +81,7 @@ module.exports = {
       {
         test: /index\.tsx?$/,
         include: /src\/components/,
-        loader: 'barrel-loader',
+        loader: '@apec1/barrel-loader',
         options: {
           sort: true,
           removeDuplicates: true
@@ -90,7 +90,7 @@ module.exports = {
       {
         test: /index\.tsx?$/,
         include: /src\/utils/,
-        loader: 'barrel-loader',
+        loader: '@apec1/barrel-loader',
         options: {
           sort: false,  // Keep original order
           removeDuplicates: true
@@ -114,7 +114,7 @@ module.exports = {
     rules: [
       {
         test: /\/index\.(ts|tsx|js|jsx)$/,
-        loader: 'barrel-loader',
+        loader: '@apec1/barrel-loader',
         options: {
           sort: isDev,                    // Sort in dev for readability
           removeDuplicates: true,         // Always remove duplicates
@@ -140,7 +140,7 @@ module.exports = {
     rules: [
       {
         test: /\/index\.(ts|tsx|js|jsx)$/,
-        loader: 'barrel-loader',
+        loader: '@apec1/barrel-loader',
         options: {
           removeDuplicates: true,
           sort: true
@@ -156,7 +156,7 @@ module.exports = {
 ```typescript
 // rspack.config.ts
 import { defineConfig } from '@rspack/cli';
-import type { BarrelLoaderOptions } from 'barrel-loader';
+import type { BarrelLoaderOptions } from '@apec1/barrel-loader';
 
 const barrelOptions: BarrelLoaderOptions = {
   sort: true,
@@ -170,7 +170,7 @@ export default defineConfig({
     rules: [
       {
         test: /\/index\.tsx?$/,
-        loader: 'barrel-loader',
+        loader: '@apec1/barrel-loader',
         options: barrelOptions
       }
     ]
@@ -195,7 +195,7 @@ module.exports = {
           path.resolve(__dirname, 'packages/components/src'),
           path.resolve(__dirname, 'packages/hooks/src')
         ],
-        loader: 'barrel-loader',
+        loader: '@apec1/barrel-loader',
         options: {
           sort: true,
           removeDuplicates: true,
@@ -218,7 +218,7 @@ Sort exports alphabetically:
 ```javascript
 // webpack.config.js
 {
-  loader: 'barrel-loader',
+  loader: '@apec1/barrel-loader',
   options: {
     sort: true
   }
@@ -245,7 +245,7 @@ Remove duplicate exports:
 
 ```javascript
 {
-  loader: 'barrel-loader',
+  loader: '@apec1/barrel-loader',
   options: {
     removeDuplicates: true
   }
@@ -271,7 +271,7 @@ Enable detailed logging:
 
 ```javascript
 {
-  loader: 'barrel-loader',
+  loader: '@apec1/barrel-loader',
   options: {
     verbose: true
   }
@@ -292,7 +292,7 @@ Recursively resolve nested barrel files:
 
 ```javascript
 {
-  loader: 'barrel-loader',
+  loader: '@apec1/barrel-loader',
   options: {
     resolveBarrelFiles: true
   }
@@ -330,7 +330,7 @@ module.exports = {
       {
         test: /\/index\.tsx?$/,
         include: /src\/components/,
-        loader: 'barrel-loader',
+        loader: '@apec1/barrel-loader',
         options: {
           sort: true,
           removeDuplicates: true,
@@ -369,7 +369,7 @@ module.exports = {
       {
         test: /\/index\.(ts|js)$/,
         include: /src\/api/,
-        loader: 'barrel-loader',
+        loader: '@apec1/barrel-loader',
         options: {
           sort: true,        // Alphabetical order
           removeDuplicates: true
@@ -407,7 +407,7 @@ module.exports = {
       {
         test: /index\.(ts|js)$/,
         include: /src\/utils/,
-        loader: 'barrel-loader',
+        loader: '@apec1/barrel-loader',
         options: {
           sort: false,           // Keep manual order
           removeDuplicates: true,
@@ -434,7 +434,7 @@ module.exports = {
       {
         test: /\/index\.tsx?$/,
         include: path.resolve(__dirname, '../../packages/ui'),
-        loader: 'barrel-loader',
+        loader: '@apec1/barrel-loader',
         options: {
           sort: true,
           removeDuplicates: true
@@ -444,7 +444,7 @@ module.exports = {
       {
         test: /\/index\.(ts|js)$/,
         include: path.resolve(__dirname, '../../packages/utils'),
-        loader: 'barrel-loader',
+        loader: '@apec1/barrel-loader',
         options: {
           sort: false,
           removeDuplicates: true
@@ -454,7 +454,7 @@ module.exports = {
       {
         test: /\/index\.ts$/,
         include: path.resolve(__dirname, '../../packages/hooks'),
-        loader: 'barrel-loader',
+        loader: '@apec1/barrel-loader',
         options: {
           sort: true,
           removeDuplicates: true,
@@ -475,7 +475,7 @@ module.exports = {
 ```typescript
 // webpack.config.ts
 import type { Configuration } from 'webpack';
-import type { BarrelLoaderOptions } from 'barrel-loader';
+import type { BarrelLoaderOptions } from '@apec1/barrel-loader';
 
 const barrelOptions: BarrelLoaderOptions = {
   sort: true,
@@ -489,7 +489,7 @@ const config: Configuration = {
     rules: [
       {
         test: /\/index\.tsx?$/,
-        loader: 'barrel-loader',
+        loader: '@apec1/barrel-loader',
         options: barrelOptions
       }
     ]
@@ -511,13 +511,13 @@ export default config;
 // ✗ Wrong - too specific
 {
   test: /index\.ts$/,  // Misses .tsx, .js, .jsx
-  loader: 'barrel-loader'
+  loader: '@apec1/barrel-loader'
 }
 
 // ✓ Correct - matches all barrel files
 {
   test: /\/index\.(ts|tsx|js|jsx)$/,
-  loader: 'barrel-loader'
+  loader: '@apec1/barrel-loader'
 }
 ```
 
@@ -529,7 +529,7 @@ export default config;
 
 ```javascript
 {
-  loader: 'barrel-loader',
+  loader: '@apec1/barrel-loader',
   options: {
     removeDuplicates: true  // Enable explicitly
   }
@@ -544,7 +544,7 @@ export default config;
 
 ```javascript
 {
-  loader: 'barrel-loader',
+  loader: '@apec1/barrel-loader',
   options: {
     resolveBarrelFiles: false,  // Disable deep resolution
     verbose: false               // Disable logging
@@ -560,7 +560,7 @@ export default config;
 
 ```javascript
 {
-  loader: 'barrel-loader',
+  loader: '@apec1/barrel-loader',
   options: {
     sort: true  // Alphabetical order
   }
@@ -597,7 +597,7 @@ const path = require('path');
     path.resolve(__dirname, 'packages/ui/src'),
     path.resolve(__dirname, 'packages/components/src')
   ],
-  loader: 'barrel-loader',
+  loader: '@apec1/barrel-loader',
   options: { /* ... */ }
 }
 ```
@@ -615,7 +615,7 @@ Only process files that need optimization:
   test: /\/index\.(ts|tsx)$/,
   include: /src\/(components|hooks|utils)/,  // Only these folders
   exclude: /node_modules/,
-  loader: 'barrel-loader'
+  loader: '@apec1/barrel-loader'
 }
 ```
 
@@ -632,7 +632,7 @@ module.exports = {
     rules: [
       {
         test: /\/index\.tsx?$/,
-        loader: 'barrel-loader',
+        loader: '@apec1/barrel-loader',
         options: { /* ... */ }
       }
     ]
@@ -648,7 +648,7 @@ Different settings for dev vs prod:
 const isProd = process.env.NODE_ENV === 'production';
 
 {
-  loader: 'barrel-loader',
+  loader: '@apec1/barrel-loader',
   options: {
     sort: isProd,                    // Only sort in production
     removeDuplicates: true,          // Always remove
@@ -671,7 +671,7 @@ module.exports = {
     config.module.rules.push({
       test: /\/index\.(ts|tsx)$/,
       include: /src\/(components|hooks)/,
-      loader: 'barrel-loader',
+      loader: '@apec1/barrel-loader',
       options: {
         sort: true,
         removeDuplicates: true

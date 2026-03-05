@@ -11,7 +11,7 @@ const basicRspackConfig = {
     rules: [
       {
         test: /index\.(ts|tsx|js|jsx)$/,
-        loader: "barrel-loader",
+        loader: '@apec1/barrel-loader',
         options: {
           sort: true,
           removeDuplicates: true,
@@ -28,11 +28,11 @@ const customDetectionConfig = {
     rules: [
       {
         test: /\.(ts|tsx|js|jsx)$/,
-        loader: "barrel-loader",
+        loader: '@apec1/barrel-loader',
         options: {
           isBarrelFile: (filePath) => {
             // Treat files ending with "barrel.ts" as barrel files
-            return filePath.endsWith("barrel.ts") || filePath.endsWith("index.ts");
+            return filePath.endsWith('barrel.ts') || filePath.endsWith('index.ts');
           },
           verbose: false,
         },
@@ -48,7 +48,7 @@ const pathSpecificConfig = {
       {
         test: /index\.(ts|tsx)$/,
         include: /src\/components/,
-        loader: "barrel-loader",
+        loader: '@apec1/barrel-loader',
         options: {
           sort: true,
           removeDuplicates: true,
@@ -57,7 +57,7 @@ const pathSpecificConfig = {
       {
         test: /index\.(ts|tsx)$/,
         include: /src\/utils/,
-        loader: "barrel-loader",
+        loader: '@apec1/barrel-loader',
         options: {
           sort: false, // Keep original order for utilities
           removeDuplicates: true,
@@ -122,7 +122,7 @@ export { Button, Input, Card } from "./Button";
 
 // rspack.config.ts
 const rspackConfigTS = `import { defineConfig, RspackConfig } from "@rspack/cli";
-import type { BarrelLoaderOptions } from "barrel-loader";
+import type { BarrelLoaderOptions } from "@apec1/barrel-loader";
 
 const barrelLoaderOptions: BarrelLoaderOptions = {
   sort: true,
@@ -139,7 +139,7 @@ const config: RspackConfig = defineConfig({
     rules: [
       {
         test: /\\.(ts|tsx|js|jsx)$/,
-        loader: "barrel-loader",
+        loader: "@apec1/barrel-loader",
         options: barrelLoaderOptions,
       },
     ],
@@ -158,7 +158,7 @@ const webpackConfigJS = `module.exports = {
     rules: [
       {
         test: /index\\.(ts|tsx|js|jsx)$/,
-        loader: "barrel-loader",
+        loader: "@apec1/barrel-loader",
         options: {
           sort: true,
           removeDuplicates: true,
@@ -176,18 +176,18 @@ const webpackConfigJS = `module.exports = {
 // Strategy 1: By naming convention
 const detectByNaming = {
   isBarrelFile: (filePath) =>
-    filePath.endsWith("index.ts") ||
-    filePath.endsWith("index.tsx") ||
-    filePath.endsWith("barrel.ts") ||
-    filePath.endsWith("barrel.tsx"),
+    filePath.endsWith('index.ts') ||
+    filePath.endsWith('index.tsx') ||
+    filePath.endsWith('barrel.ts') ||
+    filePath.endsWith('barrel.tsx'),
 };
 
 // Strategy 2: By directory depth
 const detectByDepth = {
   isBarrelFile: (filePath) => {
     // Only process barrel files in these directories
-    const allowedDirs = ["src/components", "src/utils", "src/hooks", "src/themes"];
-    return allowedDirs.some((dir) => filePath.includes(dir)) && filePath.endsWith("index.ts");
+    const allowedDirs = ['src/components', 'src/utils', 'src/hooks', 'src/themes'];
+    return allowedDirs.some((dir) => filePath.includes(dir)) && filePath.endsWith('index.ts');
   },
 };
 
@@ -195,8 +195,8 @@ const detectByDepth = {
 const detectByContent = {
   isBarrelFile: (filePath) => {
     // Exclude specific files
-    const excluded = ["node_modules", ".next", "dist", "coverage", "test", ".spec", ".test"];
-    return !excluded.some((exc) => filePath.includes(exc)) && filePath.endsWith("index.ts");
+    const excluded = ['node_modules', '.next', 'dist', 'coverage', 'test', '.spec', '.test'];
+    return !excluded.some((exc) => filePath.includes(exc)) && filePath.endsWith('index.ts');
   },
 };
 
@@ -209,25 +209,25 @@ const envAwareConfig = {
     rules: [
       {
         test: /index\.(ts|tsx|js|jsx)$/,
-        loader: "barrel-loader",
+        loader: '@apec1/barrel-loader',
         options: {
           // Only sort in development for easier reading
-          sort: process.env.NODE_ENV === "development",
+          sort: process.env.NODE_ENV === 'development',
           // Always remove duplicates
           removeDuplicates: true,
           // Enable verbose logging in development
-          verbose: process.env.NODE_ENV === "development",
+          verbose: process.env.NODE_ENV === 'development',
         },
       },
     ],
   },
 };
 
-console.log("Example configurations available in this file");
-console.log("- basicRspackConfig");
-console.log("- customDetectionConfig");
-console.log("- pathSpecificConfig");
-console.log("- rspackConfigTS");
-console.log("- webpackConfigJS");
-console.log("- detectByNaming, detectByDepth, detectByContent");
-console.log("- envAwareConfig");
+console.log('Example configurations available in this file');
+console.log('- basicRspackConfig');
+console.log('- customDetectionConfig');
+console.log('- pathSpecificConfig');
+console.log('- rspackConfigTS');
+console.log('- webpackConfigJS');
+console.log('- detectByNaming, detectByDepth, detectByContent');
+console.log('- envAwareConfig');

@@ -5,7 +5,7 @@ pnpm
 rslib
 rspack
 rstest
-SENTENEL
+APEC1
 venv
 webpack
 rustup

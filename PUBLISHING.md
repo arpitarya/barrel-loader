@@ -1,6 +1,6 @@
 # Publishing Guide
 
-This document explains how to publish **barrel-loader** to npm.
+This document explains how to publish **@apec1/barrel-loader** to npm.
 
 ## Prerequisites
 
@@ -37,13 +37,13 @@ npm pack --dry-run
 1. **Cargo.toml**:
    ```toml
    [package]
-   version = "0.1.6"  # Update this
+  version = "1.0.1"  # Update this
    ```
 
 2. **package.json**:
    ```json
    {
-     "version": "0.1.6"  // Must match Cargo.toml
+     "version": "1.0.1"  // Must match Cargo.toml
    }
    ```
 
@@ -74,49 +74,54 @@ ls -la native/
 npm publish
 
 # Verify publication
-npm view barrel-loader
+npm view @apec1/barrel-loader
 ```
 
 ### Publishing via GitHub Releases (Recommended)
 
-1. Update `Cargo.toml` and `package.json` with new version (e.g., `0.1.6`)
+1. Update `Cargo.toml` and `package.json` with new version (e.g., `1.0.1`)
 2. Commit version bump:
    ```bash
    git add Cargo.toml package.json
-   git commit -m "chore: bump version to 0.1.6"
+  git commit -m "chore: bump version to 1.0.1"
    git push
    ```
-3. Create GitHub release with tag `v0.1.6` (matching version)
+3. Create GitHub release with tag `v1.0.1` (matching version)
 4. If you have a publish workflow configured, it will automatically build and publish
 
 ### Package Configuration
 
 **Package Fields** (in `package.json`):
-- `name`: `barrel-loader`
+- `name`: `@apec1/barrel-loader`
 - `version`: Must match Cargo.toml
 - `private`: Must be `false` for publishing
-- `main`: Points to CommonJS loader (`dist/index.cjs`)
-- `exports`: Dual entry point (loader + utilities)
-- `native`: Specifies native module location
+- `main`: `./dist/index.cjs`
+- `module`: `./dist/index.mjs`
+- `types`: `./dist/index.d.ts`
+- `publishConfig.access`: `public`
 
 ```json
 {
-  "name": "barrel-loader",
-  "version": "0.1.6",
+  "name": "@apec1/barrel-loader",
+  "version": "1.0.1",
   "private": false,
   "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "exports": {
     ".": {
-      "types": "./dist/index.d.cts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
-    },
-    "./barrel-loader-utils": {
-      "types": "./dist/barrel-loader-utils.d.cts",
-      "require": "./dist/barrel-loader-utils.cjs"
     }
   },
   "files": [
     "dist/",
+    "docs/",
     "native/",
     "README.md",
     "LICENSE"
@@ -148,9 +153,9 @@ Follow [Semantic Versioning](https://semver.org/):
 - **PATCH** (0.0.X): Bug fixes only
 
 Examples:
-- `0.1.0` → `0.2.0`: New option added to loader
-- `0.1.0` → `0.1.6`: Bug fix in parser
-- `0.1.0` → `1.0.0`: Webpack loader API changed
+- `1.0.0` → `1.1.0`: New option added to loader
+- `1.0.0` → `1.0.1`: Bug fix in parser
+- `1.x` → `2.0.0`: Webpack loader API changed
 
 ## Troubleshooting
 
@@ -176,7 +181,7 @@ Examples:
 - **Solutions**:
   - Verify npm token is valid: `npm whoami`
   - Check token has publish permissions  
-  - If scoped, ensure registry is correct (unscoped here)
+  - For scoped package `@apec1/barrel-loader`, ensure scope/registry access is correct
 
 ### Authentication errors
 - **Solution**: `npm login` and provide credentials
@@ -196,13 +201,13 @@ Examples:
 sleep 60
 
 # Check package metadata
-npm view barrel-loader version
-npm view barrel-loader
+npm view @apec1/barrel-loader version
+npm view @apec1/barrel-loader
 
 # Install from npm in a test directory
 mkdir test-barrel
 cd test-barrel
-npm install barrel-loader
+npm install @apec1/barrel-loader
 ```
 
 ## Cross-platform Builds
@@ -227,7 +232,7 @@ Publish platform-specific prebuilts using tools like [napi-rs/setup-node](https:
 When creating a GitHub release, use this template:
 
 ```markdown
-## Changes in v0.1.6
+## Changes in v1.0.1
 
 ### Features
 - Added `convertNamespaceToNamed` option to convert `export * as` to named exports
@@ -246,6 +251,6 @@ When creating a GitHub release, use this template:
 
 ### Installation
 \`\`\`bash
-npm install barrel-loader@0.1.6
+npm install @apec1/barrel-loader@1.0.1
 \`\`\`
 ```

@@ -80,9 +80,9 @@ Core execution path is native (Rust + NAPI), with selective JavaScript handling 
 ## Install
 
 ```bash
-pnpm add barrel-loader
+pnpm add @apec1/barrel-loader
 # or
-npm install barrel-loader
+npm install @apec1/barrel-loader
 ```
 
 Runtime requirements:
@@ -105,7 +105,7 @@ module.exports = {
         test: /\/index\.(ts|tsx|js|jsx)$/,
         use: [
           {
-            loader: 'barrel-loader',
+            loader: '@apec1/barrel-loader',
             options: {
               verbose: false,
               convertNamespaceToNamed: true
@@ -129,7 +129,7 @@ export default {
         test: /\/index\.(ts|tsx|js|jsx)$/,
         use: [
           {
-            loader: 'barrel-loader',
+            loader: '@apec1/barrel-loader',
             options: {
               verbose: false,
               convertNamespaceToNamed: true

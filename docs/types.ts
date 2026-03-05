@@ -5,7 +5,7 @@
  * in a TypeScript project.
  */
 
-import type { BarrelLoaderOptions } from "barrel-loader";
+import type { BarrelLoaderOptions } from '@apec1/barrel-loader';
 
 /**
  * Options accepted by the barrel-loader
@@ -80,7 +80,7 @@ const fullConfig: BarrelLoaderOptions = {
   sort: true,
   removeDuplicates: true,
   verbose: false,
-  isBarrelFile: (filePath: string) => filePath.endsWith("index.ts"),
+  isBarrelFile: (filePath: string) => filePath.endsWith('index.ts'),
 };
 
 // =============================================================================
@@ -91,7 +91,7 @@ const devConfig: BarrelLoaderOptions = {
   sort: true, // Sorted for readability
   removeDuplicates: true,
   verbose: true, // Log all transformations
-  isBarrelFile: (filePath) => filePath.includes("__barrel") || filePath.endsWith("index.ts"),
+  isBarrelFile: (filePath) => filePath.includes('__barrel') || filePath.endsWith('index.ts'),
 };
 
 // =============================================================================
@@ -128,17 +128,22 @@ interface CustomDetectionStrategy {
 const customStrategies: CustomDetectionStrategy = {
   byFileName: {
     isBarrelFile: (filePath) => {
-      const fileName = filePath.split("/").pop() || "";
+      const fileName = filePath.split('/').pop() || '';
       return (
-        fileName === "index.ts" || fileName === "index.tsx" || fileName === "barrel.ts" || fileName === "barrel.tsx"
+        fileName === 'index.ts' ||
+        fileName === 'index.tsx' ||
+        fileName === 'barrel.ts' ||
+        fileName === 'barrel.tsx'
       );
     },
   },
 
   byDirectory: {
     isBarrelFile: (filePath) => {
-      const barrelDirs = ["components", "utils", "hooks", "services"];
-      return barrelDirs.some((dir) => filePath.includes(`/${dir}/`)) && filePath.endsWith("index.ts");
+      const barrelDirs = ['components', 'utils', 'hooks', 'services'];
+      return (
+        barrelDirs.some((dir) => filePath.includes(`/${dir}/`)) && filePath.endsWith('index.ts')
+      );
     },
   },
 
@@ -155,14 +160,14 @@ const customStrategies: CustomDetectionStrategy = {
 // Example 6: Rspack configuration with types
 // =============================================================================
 
-import type { RspackConfig } from "@rspack/cli";
+import type { RspackConfig } from '@rspack/cli';
 
 const rspackConfig: RspackConfig = {
   module: {
     rules: [
       {
         test: /\.(ts|tsx|js|jsx)$/,
-        loader: "barrel-loader",
+        loader: '@apec1/barrel-loader',
         options: {
           sort: true,
           removeDuplicates: true,
@@ -177,8 +182,8 @@ const rspackConfig: RspackConfig = {
 // Example 7: Conditional configurations
 // =============================================================================
 
-const getLoaderOptions = (env: "development" | "production"): BarrelLoaderOptions => {
-  if (env === "development") {
+const getLoaderOptions = (env: 'development' | 'production'): BarrelLoaderOptions => {
+  if (env === 'development') {
     return {
       sort: true,
       removeDuplicates: true,
@@ -193,8 +198,8 @@ const getLoaderOptions = (env: "development" | "production"): BarrelLoaderOption
   };
 };
 
-const devOptions = getLoaderOptions("development");
-const prodOptions = getLoaderOptions("production");
+const devOptions = getLoaderOptions('development');
+const prodOptions = getLoaderOptions('production');
 
 // =============================================================================
 // Example 8: Environment-aware configuration builder
@@ -232,8 +237,8 @@ class BarrelLoaderConfigBuilder {
 const builtConfig = new BarrelLoaderConfigBuilder()
   .withSorting(true)
   .withDuplicateRemoval(true)
-  .withVerboseLogging(process.env.NODE_ENV === "development")
-  .withCustomDetection((path) => path.endsWith("index.ts"))
+  .withVerboseLogging(process.env.NODE_ENV === 'development')
+  .withCustomDetection((path) => path.endsWith('index.ts'))
   .build();
 
 // =============================================================================
@@ -244,17 +249,17 @@ const builtConfig = new BarrelLoaderConfigBuilder()
  * Type guard to check if an object is valid BarrelLoaderOptions
  */
 function isValidBarrelLoaderOptions(obj: unknown): obj is BarrelLoaderOptions {
-  if (typeof obj !== "object" || obj === null) {
+  if (typeof obj !== 'object' || obj === null) {
     return false;
   }
 
   const opts = obj as BarrelLoaderOptions;
 
   return (
-    (opts.sort === undefined || typeof opts.sort === "boolean") &&
-    (opts.removeDuplicates === undefined || typeof opts.removeDuplicates === "boolean") &&
-    (opts.verbose === undefined || typeof opts.verbose === "boolean") &&
-    (opts.isBarrelFile === undefined || typeof opts.isBarrelFile === "function")
+    (opts.sort === undefined || typeof opts.sort === 'boolean') &&
+    (opts.removeDuplicates === undefined || typeof opts.removeDuplicates === 'boolean') &&
+    (opts.verbose === undefined || typeof opts.verbose === 'boolean') &&
+    (opts.isBarrelFile === undefined || typeof opts.isBarrelFile === 'function')
   );
 }
 
@@ -277,6 +282,11 @@ type PartialBarrelLoaderOptions = Partial<BarrelLoaderOptions>;
  */
 type RequiredBarrelLoaderOptions = Required<BarrelLoaderOptions>;
 
-export type { BarrelLoaderOptions, LoaderOptions, PartialBarrelLoaderOptions, RequiredBarrelLoaderOptions };
+export type {
+  BarrelLoaderOptions,
+  LoaderOptions,
+  PartialBarrelLoaderOptions,
+  RequiredBarrelLoaderOptions,
+};
 
 export { BarrelLoaderConfigBuilder, isValidBarrelLoaderOptions };
