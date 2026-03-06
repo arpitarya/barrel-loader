@@ -41,10 +41,6 @@ if command_exists rustc; then
     if command_exists rustup; then
         echo -e "${GREEN}✓ rustup is available${NC}"
 
-        # Update rustup
-        echo -e "${YELLOW}Updating rustup...${NC}"
-        rustup update
-
         # Ensure required components are installed
         echo -e "${YELLOW}Installing required components...${NC}"
         rustup component add rustfmt clippy

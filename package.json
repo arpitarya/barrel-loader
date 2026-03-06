@@ -1,6 +1,6 @@
 {
   "name": "@apec1/barrel-loader",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "High-performance barrel file loader for webpack/rspack using Rust NAPI bindings",
   "license": "MIT",
   "author": "Arpit Arya <arpitarya@users.noreply.github.com>",
