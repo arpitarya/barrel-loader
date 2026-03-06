@@ -264,6 +264,10 @@ pnpm build:rust   # Rust only
 pnpm build:ts     # TypeScript bundles only
 pnpm build:debug  # Debug Rust build + TypeScript
 
+pnpm version:bump patch  # Bump patch in package.json + Cargo.toml
+pnpm version:check       # Ensure versions are in sync
+pnpm release:verify      # Version check + tests + full build
+
 pnpm test         # JS integration checks
 pnpm test:rust    # Rust tests
 pnpm lint         # biome + clippy

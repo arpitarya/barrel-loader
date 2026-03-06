@@ -5,15 +5,22 @@ This document explains how to publish **@apec1/barrel-loader** to npm.
 ## Prerequisites
 
 Before publishing, ensure:
-1. All tests pass: `cargo test` (Rust) and `node test.cjs` (integration)
-2. Build succeeds: `pnpm build` (both Rust and TypeScript)
-3. Code is formatted and linted: Biome checks pass
-4. Both version numbers are updated (see Version Sync)
-5. Changes are committed and pushed to main
+1. Versions are in sync: `pnpm run version:check`
+2. Bump version using script (see Version Sync)
+3. All tests pass: `cargo test` (Rust) and `node test.cjs` (integration)
+4. Build succeeds: `pnpm build` (both Rust and TypeScript)
+5. Code is formatted and linted: Biome checks pass
+6. Changes are committed and pushed to main
 
 ### Pre-publish Checklist
 
 ```bash
+# Bump version in package.json + Cargo.toml
+pnpm run version:bump patch
+
+# Ensure version sync
+pnpm run version:check
+
 # Run full test suite
 cargo test
 
@@ -32,7 +39,22 @@ npm pack --dry-run
 
 ## Version Sync
 
-**IMPORTANT**: Update version in BOTH files to match:
+**IMPORTANT**: Always bump versions using the script to keep both files in sync.
+
+Preferred:
+
+```bash
+pnpm run version:bump patch
+# or: minor | major | 1.2.3
+```
+
+Verification:
+
+```bash
+pnpm run version:check
+```
+
+The script updates the version in BOTH files:
 
 1. **Cargo.toml**:
    ```toml
@@ -79,14 +101,18 @@ npm view @apec1/barrel-loader
 
 ### Publishing via GitHub Releases (Recommended)
 
-1. Update `Cargo.toml` and `package.json` with new version (e.g., `1.0.1`)
+1. Bump version with script (e.g., to `1.0.5`):
+  ```bash
+  pnpm run version:bump patch
+  pnpm run version:check
+  ```
 2. Commit version bump:
    ```bash
    git add Cargo.toml package.json
-  git commit -m "chore: bump version to 1.0.1"
+  git commit -m "chore: bump version to 1.0.5"
    git push
    ```
-3. Create GitHub release with tag `v1.0.1` (matching version)
+3. Create GitHub release with tag `v1.0.5` (matching version)
 4. If you have a publish workflow configured, it will automatically build and publish
 
 ### Package Configuration
@@ -161,9 +187,10 @@ Examples:
 
 ### Version Mismatch Error
 - **Symptom**: npm warns or native module doesn't match version
-- **Solution**: Ensure `Cargo.toml` and `package.json` have identical versions
+- **Solution**: Use script-based checks and bump flow
   ```bash
-  grep "version" Cargo.toml package.json
+  pnpm run version:check
+  pnpm run version:bump patch
   ```
 
 ### Build Fails

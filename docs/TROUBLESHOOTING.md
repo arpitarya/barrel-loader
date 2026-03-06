@@ -15,6 +15,7 @@ This guide focuses on real failure modes seen when building and using `barrel-lo
 - [7) Why output size/file count changes between builds](#7-why-output-sizefile-count-changes-between-builds)
 - [8) Verbose debugging workflow](#8-verbose-debugging-workflow)
 - [9) Known limitations and practical workarounds](#9-known-limitations-and-practical-workarounds)
+- [10) Version mismatch between Cargo.toml and package.json](#10-version-mismatch-between-cargotoml-and-packagejson)
 
 ---
 
@@ -261,6 +262,41 @@ What you get:
 ---
 
 ## 9) Known limitations and practical workarounds
+
+---
+
+## 10) Version mismatch between Cargo.toml and package.json
+
+### Symptoms
+
+- Publish checks fail before release
+- CI fails on `version:check`
+- npm package version and Rust crate version diverge
+
+### Root cause
+
+Version was edited manually in one file but not the other.
+
+### Fix
+
+Use the project scripts instead of manual edits:
+
+```bash
+# Verify mismatch
+pnpm run version:check
+
+# Bump both files together
+pnpm run version:bump patch
+
+# Re-check
+pnpm run version:check
+```
+
+If you need a specific version:
+
+```bash
+pnpm run version:bump 1.2.3
+```
 
 ### Direct declaration exports may not be fully transformed
 
